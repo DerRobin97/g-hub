@@ -1,7 +1,14 @@
 # G-Hub Frontend (Vite SPA) — Build-Kontext = Repo-Root (Monorepo).
 # In Railway: Service "frontend" → Dockerfile-Pfad = Dockerfile.frontend, Root = "/".
-# WICHTIG: VITE_API_URL wird zur BUILD-Zeit eingebacken → muss als Build-Arg/
-# Service-Variable die öffentliche Backend-URL (…/api) sein.
+#
+# Das Frontend wird in Produktion über `server.mjs` ausgeliefert: statische SPA
+# + Reverse-Proxy für /api ans Backend. So sind die Auth-Cookies first-party
+# (Fix für den Login-Rücksprung auf *.up.railway.app, siehe server.mjs).
+#
+# Env zur LAUFZEIT (Railway, Service "frontend"):
+#   BACKEND_ORIGIN = https://<backend>.up.railway.app   (ohne /api)
+# Build-Arg:
+#   VITE_API_URL = /api   (relativ → Browser ruft die Frontend-Domain auf)
 
 # ---- Build-Stage ----
 FROM node:20-bookworm-slim AS build
@@ -20,13 +27,15 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build:shared && npm run build --workspace @g-hub/frontend
 
-# ---- Runtime-Stage (statisches Ausliefern) ----
+# ---- Runtime-Stage (SPA-Server + /api-Proxy) ----
 FROM node:20-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
-RUN npm install -g serve@14
+# Nur die zwei Server-Abhängigkeiten (Static + Proxy), kein Workspace nötig.
+RUN npm install express@^4 http-proxy-middleware@^2
 COPY --from=build /app/frontend/dist ./dist
+COPY frontend/server.mjs ./server.mjs
 
 EXPOSE 8080
-# SPA-Fallback (-s) auf index.html; Railway-Port via $PORT.
-CMD ["sh", "-c", "serve -s dist -l ${PORT:-8080}"]
+# Liefert dist/ aus und proxyt /api → $BACKEND_ORIGIN. Railway-Port via $PORT.
+CMD ["node", "server.mjs"]

@@ -47,6 +47,7 @@ model Workspace {
   campaigns   Campaign[]
   planMonths  PlanMonth[]
   timeEntries TimeEntry[]
+  assets      Asset[]
 
   @@map("workspaces")
 }
@@ -76,6 +77,7 @@ model User {
   timeEntries            TimeEntry[]
   absenceBalances        AbsenceBalance[]
   workSettings           WorkSettings?
+  assetsUploaded         Asset[]            @relation("AssetUploadedBy")
 
   @@map("users")
 }
@@ -526,4 +528,36 @@ model WorkSettings {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("work_settings")
+}
+
+// ── Assets (§4.7) ────────────────────────────────────────────
+// Werte = Anzeige-Label aus dem Prototyp (data.js `assets`, UI-Filter).
+enum AssetKind {
+  Bild
+  Video
+  Datei
+}
+
+model Asset {
+  id           String    @id @default(uuid())
+  workspaceId  String    @map("workspace_id")
+  // Dateiname / sprechender Tag (Prototyp: `tag`).
+  tag          String
+  kind         AssetKind
+  mime         String
+  // Größe in Bytes.
+  size         Int       @default(0)
+  // Objekt-Schlüssel im S3-kompatiblen Bucket (presigned Up-/Download).
+  storageKey   String    @map("storage_key")
+  // Optionaler Kanal-Bezug (z. B. instagram/facebook) wie im Prototyp.
+  channel      String?
+  uploadedById String?   @map("uploaded_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploadedBy User?     @relation("AssetUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, kind])
+  @@map("assets")
 }

@@ -1,4 +1,4 @@
-# Lokale Infrastruktur für die Entwicklung: PostgreSQL + Redis.
+# Lokale Infrastruktur für die Entwicklung: PostgreSQL + Redis + MinIO (S3-kompatibel).
 # Start:  docker compose up -d
 # Stop:   docker compose down   (Daten bleiben im Volume erhalten)
 services:
@@ -35,6 +35,45 @@ services:
       timeout: 5s
       retries: 10
 
+  # S3-kompatibler Object-Storage für die Asset-Bibliothek (Bauplan §4.7).
+  # Lokaler Stub statt Cloudflare R2 / AWS S3 — Provider-Entscheidung folgt (§14).
+  # Derselbe @aws-sdk/client-s3-Code spricht später R2/S3 nur über andere Env-Werte.
+  minio:
+    image: minio/minio:latest
+    container_name: ghub-minio
+    restart: unless-stopped
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ghubminio
+      MINIO_ROOT_PASSWORD: ghubminio
+    ports:
+      # Host 9002/9003 (9000/9001 evtl. von anderem Projekt belegt) →
+      # Container 9000 = S3-API (Browser & Backend), 9001 = Web-Console.
+      - '9002:9000'
+      - '9003:9001'
+    volumes:
+      - ghub_minfdata:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Einmaliger Init-Container: legt den Asset-Bucket an (idempotent), dann Exit.
+  minio-setup:
+    image: minio/mc:latest
+    container_name: ghub-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ghubminio ghubminio &&
+      mc mb --ignore-existing local/g-hub-assets &&
+      echo 'Bucket g-hub-assets bereit.';
+      "
+
 volumes:
   ghub_pgdata:
   ghub_redisdata:
+  ghub_minfdata:

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { TimeEntryDto, TimeOverviewDto } from '@g-hub/shared';
+import type { TimeEntryDto, TimeOverviewDto, AssetDto } from '@g-hub/shared';
 import { Icon, type IconName } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
 import { Avatar, Bars, ChannelBadge, Ring } from '../../components/ui';
@@ -12,6 +12,8 @@ import {
   timeBreakStart,
   timeClockIn,
   timeClockOut,
+  getAssets,
+  uploadAsset,
 } from '../../lib/api';
 import {
   ASSETS,
@@ -292,26 +294,82 @@ export function TeamSheet({ close }: SheetProps): React.JSX.Element {
 // ── Assets ───────────────────────────────────────────────────
 export function AssetsSheet({ close }: SheetProps): React.JSX.Element {
   const [filter, setFilter] = useState('Alle');
+  const [assets, setAssets] = useState<AssetDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const kinds = ['Alle', 'Bild', 'Video', 'Datei'];
-  const shown = filter === 'Alle' ? ASSETS : ASSETS.filter((a) => a.kind === filter);
+
+  const load = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      setAssets(await getAssets());
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Assets konnten nicht geladen werden.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      for (const file of Array.from(files)) await uploadAsset(file);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload fehlgeschlagen.');
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const shown = filter === 'Alle' ? assets : assets.filter((a) => a.kind === filter);
+  const hintStyle: React.CSSProperties = {
+    padding: '40px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 13,
+  };
+
   return (
-    <Sheet title="Asset-Bibliothek" onClose={close} full foot={<button className="btn btn-primary btn-block" onClick={close}><Icon name="plus" size={18} /> Hochladen</button>}>
+    <Sheet title="Asset-Bibliothek" onClose={close} full foot={<button className="btn btn-primary btn-block" disabled={uploading} onClick={() => inputRef.current?.click()}><Icon name="plus" size={18} /> {uploading ? 'Lädt hoch…' : 'Hochladen'}</button>}>
+      <input ref={inputRef} type="file" multiple hidden onChange={onPick} />
       <div className="chip-row" style={{ marginBottom: 16 }}>
         {kinds.map((k) => <button key={k} className={'chip ' + (filter === k ? 'on' : '')} onClick={() => setFilter(k)}>{k}</button>)}
       </div>
-      <div className="asset-grid">
-        {shown.map((a) => (
-          <div key={a.id} className="asset">
-            <div className="ph"><span className="ph-tag">{a.tag}</span></div>
-            <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', color: '#fff', backdropFilter: 'blur(4px)' }}>
-                <Icon name={a.kind === 'Video' ? 'video' : a.kind === 'Datei' ? 'file' : 'image'} size={11} />{a.kind}
-              </span>
+      {error && (
+        <div style={{ background: 'color-mix(in oklab, var(--bad) 14%, var(--surface))', border: '1px solid var(--bad)', color: 'var(--bad)', borderRadius: 11, padding: '10px 13px', fontSize: 13, marginBottom: 16 }}>{error}</div>
+      )}
+      {loading ? (
+        <div style={hintStyle}>Lädt…</div>
+      ) : shown.length === 0 ? (
+        <div style={hintStyle}>Noch keine Assets — lade welche hoch.</div>
+      ) : (
+        <div className="asset-grid">
+          {shown.map((a) => (
+            <div key={a.id} className="asset">
+              {a.kind === 'Bild' ? (
+                <img src={a.url} alt={a.tag} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div className="ph"><span className="ph-tag">{a.tag}</span></div>
+              )}
+              <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', color: '#fff', backdropFilter: 'blur(4px)' }}>
+                  <Icon name={a.kind === 'Video' ? 'video' : a.kind === 'Datei' ? 'file' : 'image'} size={11} />{a.kind}
+                </span>
+              </div>
+              {a.channel && <div style={{ position: 'absolute', bottom: 8, right: 8 }}><ChannelBadge ch={a.channel} size={22} /></div>}
             </div>
-            {a.ch && <div style={{ position: 'absolute', bottom: 8, right: 8 }}><ChannelBadge ch={a.ch} size={22} /></div>}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </Sheet>
   );
 }

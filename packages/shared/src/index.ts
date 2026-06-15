@@ -300,6 +300,32 @@ export interface TimeOverviewDto {
   settings: WorkSettingsDto;
 }
 
+// --- Assets — Bauplan §4.7 ---
+// Art des Assets (Anzeige-Label wie im Prototyp / UI-Filter).
+export const ASSET_KINDS = ['Bild', 'Video', 'Datei'] as const;
+export type AssetKind = (typeof ASSET_KINDS)[number];
+
+export interface AssetDto {
+  id: string;
+  tag: string;
+  kind: AssetKind;
+  mime: string;
+  size: number;
+  channel: string | null;
+  uploadedById: string | null;
+  createdAt: string;
+  // Presigned GET-URL (zeitlich begrenzt) für Vorschau/Download.
+  url: string;
+}
+
+// Antwort auf die Anforderung einer presigned Upload-URL.
+export interface UploadUrlDto {
+  // Objekt-Schlüssel im Bucket — beim anschließenden Anlegen des Assets mitgeben.
+  storageKey: string;
+  // Presigned PUT-URL: Datei-Bytes direkt vom Browser hierher hochladen.
+  uploadUrl: string;
+}
+
 // --- Darstellung / Appearance — Bauplan §4.1 / §6.4 ---
 export const THEMES = ['light', 'gray', 'dark'] as const;
 export type ThemeName = (typeof THEMES)[number];

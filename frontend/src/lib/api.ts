@@ -26,6 +26,9 @@ import type {
   PlanLinkDirection,
   TimeEntryDto,
   TimeOverviewDto,
+  AssetDto,
+  AssetKind,
+  UploadUrlDto,
 } from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
@@ -455,4 +458,79 @@ export function timeBreakStart(): Promise<TimeEntryDto> {
 
 export function timeBreakEnd(): Promise<TimeEntryDto> {
   return apiPost<TimeEntryDto>('/time/break/end');
+}
+
+// --- Assets (Bauplan §4.7 / §5.1) ---
+export type { AssetDto, AssetKind, UploadUrlDto } from '@g-hub/shared';
+
+export function getAssets(kind?: AssetKind): Promise<AssetDto[]> {
+  const qs = kind ? `?kind=${encodeURIComponent(kind)}` : '';
+  return apiGet<AssetDto[]>(`/assets${qs}`);
+}
+
+export function getAsset(id: string): Promise<AssetDto> {
+  return apiGet<AssetDto>(`/assets/${id}`);
+}
+
+export function requestAssetUploadUrl(input: {
+  filename: string;
+  mime: string;
+  size: number;
+}): Promise<UploadUrlDto> {
+  return apiPost<UploadUrlDto>('/assets/upload-url', input);
+}
+
+export function createAsset(input: {
+  tag: string;
+  kind: AssetKind;
+  mime: string;
+  size: number;
+  storageKey: string;
+  channel?: string | null;
+}): Promise<AssetDto> {
+  return apiPost<AssetDto>('/assets', input);
+}
+
+export function deleteAsset(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/assets/${id}`);
+}
+
+/** Leitet die Asset-Art aus dem MIME-Typ ab (Bild/Video/Datei). */
+export function assetKindFromMime(mime: string): AssetKind {
+  if (mime.startsWith('image/')) return 'Bild';
+  if (mime.startsWith('video/')) return 'Video';
+  return 'Datei';
+}
+
+/**
+ * Lädt eine Datei direkt per presigned PUT in den Bucket (ohne Cookies/Credentials).
+ * Der Content-Type muss zu dem beim Signieren verwendeten passen.
+ */
+async function uploadToBucket(uploadUrl: string, file: File): Promise<void> {
+  const contentType = file.type || 'application/octet-stream';
+  const res = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType },
+    body: file,
+  });
+  if (!res.ok) throw new ApiError(res.status, `Upload fehlgeschlagen (${res.status}).`);
+}
+
+/** Kompletter Upload-Flow: URL anfordern → PUT in den Bucket → Metadaten anlegen. */
+export async function uploadAsset(file: File, channel?: string | null): Promise<AssetDto> {
+  const mime = file.type || 'application/octet-stream';
+  const { storageKey, uploadUrl } = await requestAssetUploadUrl({
+    filename: file.name,
+    mime,
+    size: file.size,
+  });
+  await uploadToBucket(uploadUrl, file);
+  return createAsset({
+    tag: file.name,
+    kind: assetKindFromMime(file.type),
+    mime,
+    size: file.size,
+    storageKey,
+    channel: channel ?? null,
+  });
 }

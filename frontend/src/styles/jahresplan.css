@@ -1,0 +1,63 @@
+/* Jahresplan — In-App-Styles (Übersicht + Monats-Detail TD3). Tokens aus styles.css. */
+
+/* ---------- Übersicht: Monats-Timeline ---------- */
+.jp-list{display:flex; flex-direction:column; gap:11px;}
+.jp-mrow{display:flex; gap:14px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-md); padding:16px; position:relative; overflow:hidden; cursor:pointer; font-family:var(--ff);
+  transition:border-color .16s, transform .12s, background .2s;}
+.jp-mrow:hover{border-color:var(--line-strong);}
+.jp-mrow:active{transform:scale(.99);}
+.jp-mrow.now{border-color:var(--accent-line);
+  background:radial-gradient(150% 130% at 100% 0%, var(--accent-soft) 0%, transparent 60%), var(--surface);}
+.jp-mrail{width:44px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding-top:1px;}
+.jp-mab{font-family:var(--ff-disp); font-weight:700; font-size:20px; letter-spacing:-0.02em; line-height:1; color:var(--text);}
+.jp-mq{font-family:var(--ff-mono); font-size:9px; color:var(--text-3);}
+.jp-mnow{font-family:var(--ff-mono); font-size:8px; font-weight:700; letter-spacing:0.08em; color:var(--accent-ink); background:var(--accent); padding:2px 5px; border-radius:5px; margin-top:3px;}
+.jp-mmain{flex:1; min-width:0;}
+.jp-mfocus{font-family:var(--ff-disp); font-weight:600; font-size:15px; letter-spacing:-0.01em; color:var(--text);}
+.jp-chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px;}
+.jp-chip{display:inline-flex; align-items:center; gap:6px; padding:5px 10px 5px 8px; border-radius:999px; font-size:11.5px; font-weight:600; background:var(--surface-2); border:1px solid var(--line); color:var(--text); white-space:nowrap;}
+.jp-cdot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+.jp-mfoot{display:flex; align-items:center; gap:7px; margin-top:11px; font-family:var(--ff-mono); font-size:10px; color:var(--text-3);}
+
+/* Jahres-Kopf (Jahr + kurze Erklärung) */
+.jp-yearbar{display:flex; align-items:center; gap:10px; margin:4px 2px 2px;}
+.jp-yearbar .yr{font-family:var(--ff-disp); font-weight:700; font-size:17px; letter-spacing:-0.01em;}
+.jp-yearbar .hint{flex:1; font-size:11.5px; color:var(--text-3); line-height:1.35;}
+
+/* ---------- Monats-Detail (TD3) ---------- */
+.jpd-hero{display:flex; align-items:center; gap:15px; padding:16px; border-radius:var(--r-lg);
+  background:radial-gradient(150% 130% at 100% 0%, var(--accent-soft) 0%, transparent 60%), var(--surface); border:1px solid var(--accent-line); margin-top:4px;}
+.jpd-hero-n{font-family:var(--ff-disp); font-weight:700; font-size:30px; line-height:0.9; letter-spacing:-0.03em;}
+.jpd-hero-k{font-family:var(--ff-mono); font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-3);}
+.jpd-hero-f{font-family:var(--ff-disp); font-weight:700; font-size:18px; letter-spacing:-0.01em; margin-top:3px;}
+.jpd-hero-s{font-size:11.5px; color:var(--text-3); margin-top:4px;}
+
+.jpd-cat-badge{font-family:var(--ff-mono); font-size:9px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:3px 8px; border-radius:6px; white-space:nowrap;}
+
+.jpd-group-h{display:flex; align-items:center; gap:9px; margin:18px 2px 11px;}
+.jpd-group-h .gd{width:10px; height:10px; border-radius:3px; flex-shrink:0;}
+.jpd-group-h .gn{font-family:var(--ff-disp); font-weight:600; font-size:15px;}
+.jpd-group-h .gc{margin-left:auto; font-family:var(--ff-mono); font-size:10px; color:var(--text-3);}
+.jpd-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:16px;}
+.jpd-card + .jpd-card{margin-top:10px;}
+.jpd-card .gt{font-family:var(--ff-disp); font-weight:700; font-size:15px; letter-spacing:-0.01em;}
+.jpd-card .gd2{font-size:12.5px; color:var(--text-2); margin-top:5px; line-height:1.42;}
+.jpd-kan{display:flex; gap:7px; margin-top:12px; flex-wrap:wrap;}
+.jpd-kanchip{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:10.5px; font-weight:600; background:var(--surface-2); border:1px solid var(--line); white-space:nowrap; color:var(--text);}
+.jpd-kanchip i{width:7px; height:7px; border-radius:50%; display:block; flex-shrink:0;}
+
+.jpd-cover{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:16px; margin-top:14px;}
+.jpd-cover .ct{font-family:var(--ff-mono); font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); margin-bottom:11px;}
+.jpd-cover .cb{display:flex; gap:7px; flex-wrap:wrap;}
+
+.jpd-vz{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:2px 15px; margin-top:10px;}
+.jpd-vz-row{display:flex; align-items:center; gap:12px; padding:12px 0;}
+.jpd-vz-row + .jpd-vz-row{border-top:1px solid var(--line);}
+.jpd-vz-dir{width:30px; height:30px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:none; color:var(--accent-fg); border:0;}
+.jpd-vz-main{flex:1; min-width:0;}
+.jpd-vz-m{font-weight:700; font-size:12.5px;}
+.jpd-vz-t{font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.35;}
+
+.jpd-add{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; border:1px dashed var(--line-strong); background:none; color:var(--text-3); border-radius:var(--r-md); font-size:13px; font-weight:600; font-family:var(--ff); cursor:pointer; margin-top:12px;}
+.jpd-add:active{transform:scale(.99);}

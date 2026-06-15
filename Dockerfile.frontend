@@ -1,0 +1,32 @@
+# G-Hub Frontend (Vite SPA) — Build-Kontext = Repo-Root (Monorepo).
+# In Railway: Service "frontend" → Dockerfile-Pfad = Dockerfile.frontend, Root = "/".
+# WICHTIG: VITE_API_URL wird zur BUILD-Zeit eingebacken → muss als Build-Arg/
+# Service-Variable die öffentliche Backend-URL (…/api) sein.
+
+# ---- Build-Stage ----
+FROM node:20-bookworm-slim AS build
+WORKDIR /app
+
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/shared/package.json packages/shared/
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+RUN npm ci
+
+COPY packages/shared packages/shared
+COPY frontend frontend
+
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build:shared && npm run build --workspace @g-hub/frontend
+
+# ---- Runtime-Stage (statisches Ausliefern) ----
+FROM node:20-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+RUN npm install -g serve@14
+COPY --from=build /app/frontend/dist ./dist
+
+EXPOSE 8080
+# SPA-Fallback (-s) auf index.html; Railway-Port via $PORT.
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-8080}"]

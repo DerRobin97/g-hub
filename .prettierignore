@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+*.tsbuildinfo
+
+# 1:1 aus dem Prototyp übernommene Design-Referenz — nicht umformatieren
+frontend/src/styles/styles.css
+frontend/src/styles/web.css
+frontend/src/styles/jahresplan.css

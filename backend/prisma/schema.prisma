@@ -1,0 +1,99 @@
+// G-Hub — Prisma-Schema
+// Aufbau schrittweise entlang Bauplan §4. Aktueller Stand (Phase 0):
+// Mandanten/Nutzer/Rollen + Appearance. Weitere Entitäten folgen je Phase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// §4.1 Mandanten / Nutzer / Rollen
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  owner
+  admin
+  content_lead
+  designer
+  social_manager
+  analyst
+  member
+}
+
+enum Theme {
+  light
+  gray
+  dark
+}
+
+model Workspace {
+  id            String       @id @default(uuid())
+  name          String
+  slug          String       @unique
+  plan          String       @default("free")
+  brandingLogo  String?      @map("branding_logo")
+  brandingColor String?      @map("branding_color")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  memberships Membership[]
+
+  @@map("workspaces")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  // Optional: OAuth-Nutzer (Google) haben kein Passwort.
+  passwordHash String?  @map("password_hash")
+  googleId     String?  @unique @map("google_id")
+  avatarUrl    String?  @map("avatar_url")
+  gradient     String?
+  phone        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  appearance  AppearancePref?
+
+  @@map("users")
+}
+
+model Membership {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  workspaceId String    @map("workspace_id")
+  role        Role      @default(member)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@map("memberships")
+}
+
+// §4.1 AppearancePref (pro User) — heute localStorage, künftig DB + lokaler Cache
+model AppearancePref {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  theme        Theme    @default(light)
+  accent       String   @default("gruen")
+  customAccent String?  @map("custom_accent")
+  corners      String   @default("md")
+  webLayout    String   @default("full") @map("web_layout")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("appearance_prefs")
+}

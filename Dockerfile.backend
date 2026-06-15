@@ -1,0 +1,41 @@
+# G-Hub Backend (NestJS + Prisma) — Build-Kontext = Repo-Root (Monorepo).
+# In Railway: Service "backend" → Dockerfile-Pfad = Dockerfile.backend, Root = "/".
+
+# ---- Build-Stage ----
+FROM node:20-bookworm-slim AS build
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+
+# Nur Manifeste zuerst → besseres Layer-Caching
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/shared/package.json packages/shared/
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+RUN npm ci
+
+# Quellcode (nur was das Backend braucht)
+COPY packages/shared packages/shared
+COPY backend backend
+
+# shared bauen, Prisma-Client generieren, Backend bauen
+RUN npm run build:shared \
+  && npm run prisma:generate --workspace @g-hub/backend \
+  && npm run build --workspace @g-hub/backend
+
+# ---- Runtime-Stage ----
+FROM node:20-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+
+# Abhängigkeiten + generierter Prisma-Client + Build-Artefakte aus der Build-Stage
+COPY --from=build /app/node_modules node_modules
+COPY --from=build /app/package.json package.json
+COPY --from=build /app/packages/shared packages/shared
+COPY --from=build /app/backend/package.json backend/package.json
+COPY --from=build /app/backend/dist backend/dist
+COPY --from=build /app/backend/prisma backend/prisma
+
+EXPOSE 3000
+# Migrationen anwenden, dann starten. Railway setzt $PORT (Default 3000).
+CMD ["sh", "-c", "npm run prisma:deploy --workspace @g-hub/backend && node backend/dist/main.js"]

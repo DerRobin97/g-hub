@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Env / Secrets
+.env
+.env.local
+.env.*.local
+.env.bak*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Test / Coverage
+coverage/
+
+# Prisma
+backend/prisma/*.db
+
+# Vite
+frontend/.vite/

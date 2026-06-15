@@ -1,0 +1,40 @@
+# Lokale Infrastruktur für die Entwicklung: PostgreSQL + Redis.
+# Start:  docker compose up -d
+# Stop:   docker compose down   (Daten bleiben im Volume erhalten)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ghub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ghub
+      POSTGRES_PASSWORD: ghub
+      POSTGRES_DB: ghub
+    ports:
+      # Host-Port 5434, da 5432/5433 bereits von anderen Projekten belegt sind.
+      - '5434:5432'
+    volumes:
+      - ghub_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ghub -d ghub']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ghub-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - ghub_redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ghub_pgdata:
+  ghub_redisdata:

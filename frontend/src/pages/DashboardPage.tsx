@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import { Delta, Ring, SectionHead, Spark, StatusTag, type StatusKey } from '../components/ui';
 import { campaignColor, ratio } from '../features/campaigns/campaignUtils';
+import { NewsSection } from '../features/news/News';
 
 /**
  * Dashboard-Grundgerüst (Bauplan §… / NEXT_STEPS Schritt 2).
@@ -234,6 +235,9 @@ export function DashboardPage(): React.JSX.Element {
         </div>
         <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
       </div>
+
+      {/* Branchen-News & Trends */}
+      <NewsSection />
 
       {/* Status-Fußzeile (echt) */}
       <p style={{ color: 'var(--text-3)', fontSize: 13, margin: 0 }}>

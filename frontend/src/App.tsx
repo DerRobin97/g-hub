@@ -20,6 +20,8 @@ import { PlanerScreen } from './features/planer/PlanerScreen';
 import { PlanerPostPage } from './features/planer/PlanerPostPage';
 import { PlanerFreigabePage } from './features/planer/PlanerFreigabePage';
 import { PlanerTagPage } from './features/planer/PlanerTagPage';
+import { OverlayProvider } from './app/OverlayContext';
+import { SHEET_REGISTRY } from './features/sheets/registry';
 
 /**
  * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
@@ -36,6 +38,7 @@ export function App(): React.JSX.Element {
 
   return (
     <PlanerProvider>
+      <OverlayProvider registry={SHEET_REGISTRY}>
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
@@ -58,6 +61,7 @@ export function App(): React.JSX.Element {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      </OverlayProvider>
     </PlanerProvider>
   );
 }

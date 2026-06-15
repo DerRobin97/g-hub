@@ -248,6 +248,26 @@ export const ASSETS: Asset[] = [
   { id: 'a8', tag: 'product-shot-03', kind: 'Bild', ch: null },
 ];
 
+// --- Aufgaben (einfache Liste für Sheets/Suche) ---
+export interface SimpleTask {
+  id: string;
+  t: string;
+  who: string;
+  due: string;
+  done: boolean;
+  prio: 'high' | 'med' | 'low';
+  tag: string;
+}
+
+export const TASKS: SimpleTask[] = [
+  { id: 't1', t: 'Reel-Skript für Sommer-Launch finalisieren', who: 'lena', due: 'Heute', done: false, prio: 'high', tag: 'Content' },
+  { id: 't2', t: 'Creatives für TikTok-Ads exportieren', who: 'jonas', due: 'Heute', done: false, prio: 'high', tag: 'Design' },
+  { id: 't3', t: 'LinkedIn-Captions Korrektur lesen', who: 'me', due: 'Morgen', done: false, prio: 'med', tag: 'Content' },
+  { id: 't4', t: 'Influencer-Briefing versenden', who: 'mira', due: '4. Jun', done: false, prio: 'med', tag: 'Outreach' },
+  { id: 't5', t: 'Mai-Report an Geschäftsführung', who: 'tom', due: 'Erledigt', done: true, prio: 'low', tag: 'Analytics' },
+  { id: 't6', t: 'Hashtag-Set für Q2 aktualisieren', who: 'mira', due: 'Erledigt', done: true, prio: 'low', tag: 'Content' },
+];
+
 // --- Zeiterfassung ---
 export const WORKTIME = {
   target: 40,

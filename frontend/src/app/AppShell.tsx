@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { NAV, PROJ_SUB, headFor } from './nav';
 import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
+import { useOverlay } from './OverlayContext';
+import { AIDock } from '../features/ai/AIAssistant';
+import { INBOX, NEWS } from '../lib/mockData';
 
 const LAYOUTS: Array<[WebLayout, string]> = [
   ['full', 'Voll'],
@@ -41,8 +45,11 @@ function ThemeGlyph({ light }: { light: boolean }): React.JSX.Element {
 export function AppShell(): React.JSX.Element {
   const { user } = useAuth();
   const { theme, webLayout, setWebLayout, toggleTheme } = useAppearance();
+  const { open } = useOverlay();
   const location = useLocation();
   const navigate = useNavigate();
+  const [aiOpen, setAiOpen] = useState(false);
+  const alertCount = INBOX.filter((n) => n.unread).length + (NEWS.unread || 0);
 
   const isLight = theme === 'light';
   const firstName = user?.name?.split(' ')[0];
@@ -57,7 +64,7 @@ export function AppShell(): React.JSX.Element {
   const depth = location.pathname.split('/').filter(Boolean).length;
   const showBack = depth > 1;
 
-  const shellClass = `web-shell layout-${webLayout}${isLight ? ' theme-light' : ''}`;
+  const shellClass = `web-shell layout-${webLayout}${isLight ? ' theme-light' : ''}${aiOpen ? ' ai-open' : ''}`;
   const canvasClass = `web-canvas ${isWide ? 'wide' : 'col'}${showSub ? ' in-sub' : ''}`;
 
   return (
@@ -71,6 +78,11 @@ export function AppShell(): React.JSX.Element {
             <div className="web-brand-sub">Marketing</div>
           </div>
         </div>
+
+        <button className="web-create" data-tip="Erstellen" onClick={() => open('create')}>
+          <Icon name="plus" size={20} stroke={2.3} />
+          <span className="web-create-tx">Erstellen</span>
+        </button>
 
         <div className="web-nav-grp">Navigation</div>
         <nav className="web-nav">
@@ -138,10 +150,16 @@ export function AppShell(): React.JSX.Element {
             <div className="web-kicker">{head.kicker}</div>
             <div className="web-title">{head.title}</div>
           </div>
-          <div className="web-search" aria-hidden="true">
+          <button className="web-search" onClick={() => open('search')} aria-label="Suche öffnen">
             <Icon name="search" size={17} />
             <span style={{ flex: 1, textAlign: 'left' }}>Suchen …</span>
             <kbd>⌘K</kbd>
+          </button>
+          <div className="web-top-actions">
+            <button className="web-iconbtn" onClick={() => open('alerts')} aria-label="Mitteilungen">
+              <Icon name="bell" size={19} />
+              {alertCount > 0 && <span className="web-badge-dot">{alertCount}</span>}
+            </button>
           </div>
         </header>
 
@@ -174,6 +192,19 @@ export function AppShell(): React.JSX.Element {
           </div>
         </div>
       </div>
+
+      {/* ---------- KI-Assistent (andockbares Panel) ---------- */}
+      <div className="web-ai" aria-hidden={!aiOpen}>
+        {aiOpen && <AIDock onClose={() => setAiOpen(false)} />}
+      </div>
+
+      {/* ---------- KI-FAB (unten rechts) ---------- */}
+      {!aiOpen && (
+        <button className="web-fab" onClick={() => setAiOpen(true)} aria-label="KI-Assistent öffnen">
+          <Icon name="bot" size={24} stroke={1.9} />
+          <span className="web-fab-tx">KI-Assistent</span>
+        </button>
+      )}
 
       {/* ---------- Bottom-Nav (Handy) ---------- */}
       <nav className="shell-bottomnav" aria-label="Hauptnavigation">

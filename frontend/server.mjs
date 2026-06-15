@@ -20,7 +20,10 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 8080;
-const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN;
+// Ziel-Backend für den /api-Reverse-Proxy. Default = produktive Backend-URL,
+// damit der Proxy auch ohne gesetzte Env-Var funktioniert (per BACKEND_ORIGIN
+// überschreibbar, z. B. für eigene Domains).
+const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN || 'https://g-hub-production.up.railway.app';
 const distDir = path.join(__dirname, 'dist');
 
 const app = express();

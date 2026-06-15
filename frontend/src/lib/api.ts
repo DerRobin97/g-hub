@@ -32,7 +32,11 @@ import type {
   SearchResultsDto,
 } from '@g-hub/shared';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+// Immer same-origin `/api`: lokal über den Vite-Proxy, in Produktion über den
+// Proxy in `server.mjs`. So sind die Auth-Cookies first-party (funktioniert auch
+// auf Mobile, wo Cross-Site-/Drittanbieter-Cookies blockiert werden). Eine evtl.
+// veraltete VITE_API_URL wird bewusst ignoriert.
+const BASE_URL = '/api';
 
 export class ApiError extends Error {
   constructor(

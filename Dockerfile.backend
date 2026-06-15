@@ -36,6 +36,8 @@ COPY --from=build /app/backend/package.json backend/package.json
 COPY --from=build /app/backend/dist backend/dist
 COPY --from=build /app/backend/prisma backend/prisma
 
-EXPOSE 3000
-# Migrationen anwenden, dann starten. Railway setzt $PORT (Default 3000).
+# Railway setzt $PORT=8080 (Default). EXPOSE entsprechend, damit die
+# Port-Erkennung den richtigen Ziel-Port wählt.
+EXPOSE 8080
+# Migrationen anwenden, dann starten.
 CMD ["sh", "-c", "npm run prisma:deploy --workspace @g-hub/backend && node backend/dist/main.js"]

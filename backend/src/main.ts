@@ -25,8 +25,9 @@ async function bootstrap(): Promise<void> {
   app.enableCors({ origin: frontendUrl, credentials: true });
 
   const port = Number(config.get<string>('PORT') ?? 3000);
-  await app.listen(port);
-  Logger.log(`G-Hub API läuft auf http://localhost:${port}/api`, 'Bootstrap');
+  // An 0.0.0.0 binden, damit der Railway-Proxy den Container erreicht.
+  await app.listen(port, '0.0.0.0');
+  Logger.log(`G-Hub API läuft auf Port ${port} (Prefix /api)`, 'Bootstrap');
 }
 
 void bootstrap();

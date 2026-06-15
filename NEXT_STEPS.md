@@ -1,0 +1,168 @@
+# G-Hub — Fortschritt & nächste Schritte (Session-Übergabe)
+
+> Diese Datei ist die **Übergabe für die nächste Session**. Sie beschreibt den aktuellen
+> Stand, wie man lokal entwickelt/deployt, wichtige Stolpersteine und die konkreten
+> nächsten Aufgaben. Vollständige Spezifikation: `../G-Hub – Bauplan für Claude Code.md`.
+
+_Stand: Phase 0 abgeschlossen und **live auf Railway**._
+
+---
+
+## 1. Wo wir stehen
+
+### ✅ Fertig (Phase 0 — Fundament, live)
+
+- **Monorepo** (npm workspaces): `frontend`, `backend`, `packages/shared`
+- **Backend** (NestJS + Prisma + PostgreSQL): Module `health`, `auth`, `prisma`
+  - Entitäten: `Workspace`, `User`, `Membership`, `AppearancePref` (Prisma)
+  - **Auth**: `POST /api/auth/register|login|refresh|logout`, `GET /api/auth/me`,
+    Google-OAuth `GET /api/auth/google/connect|callback`
+  - argon2-Passwort-Hashing, JWT in **httpOnly-Cookies** (Access + Refresh)
+- **Frontend** (Vite + React + TS): Appearance-System (`lib/appearance.ts`),
+  Prototyp-CSS (`styles/`), **Login-UI nur via Google** (`auth/AuthScreen.tsx`),
+  Auth-Gate (`App.tsx`), einfache eingeloggte Startansicht (`auth/AuthedHome.tsx`)
+- **Deployment**: GitHub `DerRobin97/g-hub` → Railway Auto-Deploy
+  - 4 Services: **backend**, **frontend**, **Postgres**, **Redis**
+
+### ⏳ Noch nicht gebaut
+
+- **App-Shell** (Sidebar/Topbar, responsive Bottom-Nav) — aktuell nur die „Hallo"-Karte
+- **Routing** (React Router) — aktuell nur Auth-Gate per Conditional
+- Alle Fachbereiche (Phase 1+): Projektmanager, Aufgaben, Kampagnen, Jahresplan,
+  Assets, Zeiterfassung, Dashboard, Analytics, Planer, News, KI
+- BullMQ-Jobs (Redis ist bereitgestellt, aber noch nicht verdrahtet)
+- Tests, Seeds, Audit-Log, DSGVO
+
+---
+
+## 2. Live-URLs & Railway
+
+| Service     | URL                                                |
+| ----------- | -------------------------------------------------- |
+| Frontend    | https://g-hub-frontend-production.up.railway.app   |
+| Backend API | https://g-hub-production.up.railway.app/api        |
+| Healthcheck | https://g-hub-production.up.railway.app/api/health |
+
+- **Auto-Deploy**: jeder `git push` auf `main` baut beide Services neu.
+- **Backend-Variablen** in Railway gesetzt: `NODE_ENV, DATABASE_URL (${{Postgres.DATABASE_URL}}),
+REDIS_URL (${{Redis.REDIS_URL}}), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL,
+JWT_REFRESH_TTL, TOKEN_ENCRYPTION_KEY, FRONTEND_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
+GOOGLE_LOGIN_REDIRECT_URI`.
+- **Frontend-Variable**: `VITE_API_URL=https://g-hub-production.up.railway.app/api`
+  (⚠️ wird zur **Build-Zeit** eingebacken → nach Änderung Redeploy nötig).
+- Detaillierte Deploy-Schritte: siehe `DEPLOY.md`.
+
+---
+
+## 3. Lokal entwickeln (Quickstart)
+
+```bash
+cd "…/G-Hub - APP-SaaS/g-hub"
+npm install                       # alle Workspaces
+cp .env.example .env              # einmalig; Werte sind lokal schon gefüllt
+docker compose up -d              # Postgres :5434, Redis :6379
+
+# Shared zuerst bauen (wird von beiden gebraucht)
+npm run build:shared
+
+# Backend (Terminal 1)
+cd backend
+npm run prisma:generate
+npm run prisma:migrate            # legt/aktualisiert Tabellen (lokal)
+npm run dev                       # NestJS auf http://localhost:3000/api
+
+# Frontend (Terminal 2)
+cd frontend
+npm run dev                       # Vite auf http://localhost:5173 (Proxy /api → :3000)
+```
+
+Prüfen: `curl http://localhost:3000/api/health` → `{"status":"ok","db":"up",...}`
+
+**Root-Skripte:** `npm run lint`, `npm run format`, `npm run typecheck`, `npm run build`.
+
+---
+
+## 4. Wichtige Stolpersteine (gelernt)
+
+1. **Railway-Port = 8080.** App muss auf `process.env.PORT` und `0.0.0.0` lauschen
+   (siehe `backend/src/main.ts`). Dockerfiles haben `EXPOSE 8080`. Bei „502 Application
+   failed to respond" zuerst den Ziel-Port der Domain prüfen.
+2. **`@g-hub/shared` ist CommonJS** (für Nest). Frontend/Vite liest es über
+   `vite.config.ts` (`optimizeDeps.include` + `commonjsOptions`). Nicht auf ESM umstellen,
+   ohne beide Seiten anzupassen.
+3. **Cookies cross-domain**: in Produktion `SameSite=None; Secure` (Frontend- ≠ Backend-
+   Domain). Lokal `Lax` (gleiche Origin via Vite-Proxy). Siehe `auth/token.service.ts`.
+4. **CORS**: Backend erlaubt nur `FRONTEND_URL` mit `credentials: true` (`main.ts`).
+   Bei neuer Frontend-Domain → `FRONTEND_URL` am Backend anpassen.
+5. **Migrationen** laufen beim Backend-Start automatisch (`prisma migrate deploy` im
+   Dockerfile-CMD). Neue Migration lokal erzeugen und **committen**.
+6. **Google-Login** ist die einzige Anmeldeoption. In der Google Console müssen
+   eingetragen sein:
+   - Redirect-URI: `https://g-hub-production.up.railway.app/api/auth/google/callback`
+   - JS-Origin: `https://g-hub-frontend-production.up.railway.app`
+   - (lokal: `http://localhost:3000/api/auth/google/callback`)
+
+---
+
+## 5. Muster: einen neuen Fachbereich hinzufügen
+
+Beispiel „Aufgaben" (Task) — gilt analog für Kampagnen, Projekte, Jahresplan, …:
+
+1. **Prisma-Modell** in `backend/prisma/schema.prisma` ergänzen (mit `workspaceId` für
+   Mandantentrennung!). Felder aus Bauplan §4 übernehmen.
+2. `npm run prisma:migrate -- --name add_tasks` (lokal) → Migration committen.
+3. **Nest-Modul** `backend/src/tasks/` (Controller + Service + DTOs), per `JwtAuthGuard`
+   geschützt, immer auf `workspaceId` des eingeloggten Users scopen.
+4. In `app.module.ts` registrieren.
+5. **Geteilte Typen** (Enums/DTOs) in `packages/shared/src/index.ts` ergänzen.
+6. **Frontend**: API-Funktionen in `lib/api.ts`, Feature-Ordner unter
+   `frontend/src/features/<bereich>/`, UI im Gerber-Design (CSS-Variablen).
+7. Lokal testen (curl + Browser), dann `git push` → Railway deployt automatisch.
+
+---
+
+## 6. Empfohlene Reihenfolge (Phase 1)
+
+> Ziel von Phase 1: voll nutzbares internes Tool mit echten Daten (ohne externe APIs).
+
+1. **App-Shell + Routing** (zuerst!) — React Router, Sidebar/Topbar aus `main-web.jsx`,
+   responsive Bottom-Nav aus `main.jsx`, Layout-Varianten full/rail/dual. Appearance-
+   Einstellungen (Theme/Akzent) anbinden an `GET/PUT /api/me/appearance` (Endpoint noch
+   zu bauen). Referenz-Screens: Prototyp `app/*.jsx`.
+2. **Dashboard-Grundgerüst** (`dashboard.jsx`) — erstmal Platzhalter-Kacheln, später echte
+   Aggregate.
+3. **Aufgaben** (`Task`, konsolidiert — Bauplan §4.6) — Modell + CRUD-API + „Meine
+   Aufgaben"-UI (`aufgaben.jsx`). Guter erster CRUD-Vertikalschnitt.
+4. **Projektmanager** (`Project`/`Phase`/`ProjectTask` — §4.5) inkl. `projektmanager.jsx`.
+5. **Kampagnen** (`Campaign`/`Measure`/`Discount` — §4.4) inkl. `kampagnen.jsx`.
+6. **Jahresplan** (`PlanMonth`/`PlanTheme`/`PlanLink` — §4.8) + **Seed** aus `JP_MONTHS`.
+7. **Zeiterfassung** (`TimeEntry`/`AbsenceBalance` — §4.11) — Stempeluhr-State-Machine.
+8. **Assets** (§4.7) — Upload zu S3-kompatiblem Bucket (Provider noch offen, §14).
+9. **Profil**, **Suche**, **Mitteilungen** auf echte Daten.
+
+Danach Phase 2 (Social-Planer + Meta), Phase 3 (Analytics + Google), Phase 4 (KI),
+Phase 5 (Härtung). Siehe Bauplan §12.
+
+---
+
+## 7. Offene Entscheidungen (Bauplan §14)
+
+- Asset-Storage-Provider (Cloudflare R2 vs. AWS S3).
+- Meta/Google-Integrationen: App-Review & Developer-Token beantragen.
+- KI-Budget/Anbieter final (Claude angenommen).
+- Rollen-Matrix final (wer darf freigeben/posten/Budget/Integration).
+- Eigene Domains für Frontend/Backend auf Railway.
+
+---
+
+## 8. Repo-Karte (Kurz)
+
+```
+g-hub/
+  backend/   NestJS + Prisma (src/auth, src/prisma, src/health, src/common)
+  frontend/  Vite + React (src/auth, src/lib, src/styles)
+  packages/shared/  geteilte Enums/Typen (CommonJS-Build)
+  Dockerfile.backend / Dockerfile.frontend  (Build-Kontext = Repo-Root)
+  docker-compose.yml  (lokal: Postgres :5434, Redis :6379)
+  DEPLOY.md  (Railway-Schritte)  ·  NEXT_STEPS.md (diese Datei)
+```

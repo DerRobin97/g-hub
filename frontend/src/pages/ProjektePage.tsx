@@ -1,15 +1,14 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { PROJ_SUB } from '../app/nav';
-import { PageGrid, PlaceholderCard } from './Placeholder';
+import { PlaceholderCard } from './Placeholder';
+import { ProjekteHubPage } from '../features/projects/ProjekteHubPage';
 
 /**
- * Projekte-Hub-Platzhalter. Zeigt die Fachbereiche als Kacheln; eine ausgewählte
- * Unterseite (`/projekte/:area`) rendert vorerst einen Bereichs-Platzhalter.
- * Die echten Bereiche folgen in Phase 1 (Schritte 4–6).
+ * Projekte-Einstieg. Ohne Bereich: der Projekte-Hub (1:1 aus dem Prototyp).
+ * Eine noch nicht gebaute Unterseite (`/projekte/:area`) zeigt einen Platzhalter.
  */
 export function ProjektePage(): React.JSX.Element {
   const { area } = useParams<{ area?: string }>();
-  const navigate = useNavigate();
 
   if (area) {
     const sub = PROJ_SUB.find((s) => s.key === area);
@@ -21,23 +20,11 @@ export function ProjektePage(): React.JSX.Element {
         <PlaceholderCard
           icon={sub?.icon ?? 'layers'}
           title={sub?.name ?? area}
-          sub="Bereich folgt in Phase 1"
+          sub="Bereich folgt in Kürze"
         />
       </div>
     );
   }
 
-  return (
-    <PageGrid>
-      {PROJ_SUB.map((s) => (
-        <PlaceholderCard
-          key={s.key}
-          icon={s.icon}
-          title={s.name}
-          sub={s.sub}
-          onClick={() => navigate(`/projekte/${s.key}`)}
-        />
-      ))}
-    </PageGrid>
-  );
+  return <ProjekteHubPage />;
 }

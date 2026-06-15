@@ -1,12 +1,6 @@
-import { PageGrid, PlaceholderCard } from './Placeholder';
+import { AnalyticsScreen } from '../features/analytics/AnalyticsScreen';
 
-/** Analytics-Platzhalter (echte Auswertungen folgen in Phase 3). */
+/** Analytics (1:1 aus dem Prototyp; design-first mit statischen Daten). */
 export function AnalyticsPage(): React.JSX.Element {
-  return (
-    <PageGrid>
-      <PlaceholderCard icon="trend" title="Reichweite" sub="Gesamt · Google · Meta" />
-      <PlaceholderCard icon="users" title="Zielgruppen" sub="Demografie & Verhalten" />
-      <PlaceholderCard icon="target" title="Conversions" sub="Ziele & Funnel" />
-    </PageGrid>
-  );
+  return <AnalyticsScreen />;
 }

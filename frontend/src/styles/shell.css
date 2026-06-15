@@ -50,6 +50,17 @@
   .shell-phone {
     display: block;
   }
+  /* Nav/KI-FAB am Viewport verankern (fixed) statt an der .web-shell — umgeht
+     deren overflow:hidden und die mobile Browser-UI, damit die Leiste sicher
+     unten sichtbar ist und über dem Inhalt liegt. */
+  .web-shell .nav {
+    position: fixed;
+    z-index: 60;
+  }
+  .web-shell .ai-fab {
+    position: fixed;
+    z-index: 61;
+  }
   /* Desktop-KI-FAB am Handy ausblenden — dort übernimmt der .ai-fab. */
   .web-fab {
     display: none;

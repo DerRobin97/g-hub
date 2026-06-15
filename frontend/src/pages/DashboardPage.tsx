@@ -4,7 +4,7 @@ import { APP_VERSION, type CampaignSummaryDto } from '@g-hub/shared';
 import { getHealth, listCampaigns, type HealthResponse } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
-import { Delta, Ring, SectionHead, Spark, StatusTag, type StatusKey } from '../components/ui';
+import { CountUp, Delta, Ring, SectionHead, Spark, StatusTag, type StatusKey } from '../components/ui';
 import { campaignColor, ratio } from '../features/campaigns/campaignUtils';
 import { NewsSection } from '../features/news/News';
 
@@ -17,15 +17,17 @@ import { NewsSection } from '../features/news/News';
 interface Kpi {
   id: string;
   label: string;
-  value: string;
+  value: number;
+  fmt: (n: number) => string;
   delta: number;
   up: boolean;
 }
+const dec1 = (n: number): string => n.toFixed(1).replace('.', ',');
 const KPIS: Kpi[] = [
-  { id: 'reach', label: 'Reichweite', value: '128,4k', delta: 8.2, up: true },
-  { id: 'eng', label: 'Engagement', value: '6,1%', delta: 1.4, up: true },
-  { id: 'fol', label: 'Follower', value: '12.840', delta: 2.0, up: true },
-  { id: 'conv', label: 'Conversions', value: '312', delta: 3.1, up: false },
+  { id: 'reach', label: 'Reichweite', value: 128.4, fmt: (n) => dec1(n) + 'k', delta: 8.2, up: true },
+  { id: 'eng', label: 'Engagement', value: 6.1, fmt: (n) => dec1(n) + '%', delta: 1.4, up: true },
+  { id: 'fol', label: 'Follower', value: 12840, fmt: (n) => Math.round(n).toLocaleString('de-DE'), delta: 2.0, up: true },
+  { id: 'conv', label: 'Conversions', value: 312, fmt: (n) => Math.round(n).toString(), delta: 3.1, up: false },
 ];
 
 const FOCUS_SPARK = [42, 48, 45, 53, 61, 58, 67, 72, 69, 78, 84, 92];
@@ -69,7 +71,7 @@ export function DashboardPage(): React.JSX.Element {
       <div className="dash-strip" style={{ marginTop: 4 }}>
         {KPIS.map((k) => (
           <div key={k.id} className="dash-chip">
-            <div className="dash-chip-v">{k.value}</div>
+            <div className="dash-chip-v"><CountUp value={k.value} format={k.fmt} /></div>
             <div className="dash-chip-l">{k.label}</div>
             <div className={'dash-chip-d delta ' + (k.up ? 'up' : 'down')}>
               <Icon name="trend" size={11} stroke={2.2} style={k.up ? undefined : { transform: 'scaleY(-1)' }} />
@@ -86,7 +88,7 @@ export function DashboardPage(): React.JSX.Element {
             <div className="tag" style={{ marginBottom: 7 }}>
               Reichweite im Fokus
             </div>
-            <div className="dash-focus-val">128,4k</div>
+            <div className="dash-focus-val"><CountUp value={128.4} format={(n) => dec1(n) + 'k'} /></div>
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
             <Delta value={12.4} up />

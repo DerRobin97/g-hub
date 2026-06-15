@@ -2,7 +2,7 @@
  * Kleine Präsentations-Primitive (migriert aus dem Prototyp `app/ui.jsx`).
  * Rein darstellend, datenfrei — wiederverwendbar in Dashboard & Fachbereichen.
  */
-import { useEffect, useId, type RefObject } from 'react';
+import { useEffect, useId, useRef, useState, type RefObject } from 'react';
 import { Icon } from './Icon';
 import { channelMeta, TEAM_BY_ID, type Member } from '../lib/mockData';
 
@@ -16,19 +16,110 @@ export function fmtNum(n: number, mode?: 'compact'): string {
 }
 
 /**
- * Einblende-Animationen (Port aus dem Prototyp `useReveal`). Vereinfachte Variante:
- * markiert beim Mount alle `.reveal`-Kinder als sichtbar (`in`). Das CSS hat ohnehin
- * einen Fallback, daher genügt das einmalige Setzen.
+ * Einblende-Animationen (Port aus dem Prototyp `useReveal`, Design-Doku Kap. 6).
+ * Gestaffelte Reveals: jedem `.reveal`-Kind ohne eigenes `--rd` wird anhand seiner
+ * Reihenfolge eine Verzögerung zugewiesen (i·70 ms, gedeckelt). Sichtbar wird ein
+ * Element per IntersectionObserver, sobald es in den Viewport scrollt (`revFade`).
+ * Fallback: ist kein Observer verfügbar, werden alle sofort eingeblendet.
  */
 export function useReveal(ref: RefObject<HTMLElement | null>): void {
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
-    const raf = requestAnimationFrame(() => {
-      root.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'));
+    const els = Array.from(root.querySelectorAll<HTMLElement>('.reveal'));
+    els.forEach((el, i) => {
+      if (!el.style.getPropertyValue('--rd')) {
+        el.style.setProperty('--rd', `${Math.min(i, 9) * 70}ms`);
+      }
     });
-    return () => cancelAnimationFrame(raf);
+    if (typeof IntersectionObserver === 'undefined') {
+      els.forEach((el) => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, [ref]);
+}
+
+/**
+ * Zahl, die beim Einblenden hochzählt (Design-Doku Kap. 6: rAF-Tween 900 ms,
+ * Ease `1−(1−p)³`). Respektiert `prefers-reduced-motion` (zeigt sofort den Endwert)
+ * und nutzt `fmtNum` für die Formatierung. Per `tabular-nums` kein Layout-Springen.
+ */
+export function CountUp({
+  value,
+  mode,
+  duration = 900,
+  prefix = '',
+  suffix = '',
+  format,
+}: {
+  value: number;
+  mode?: 'compact';
+  duration?: number;
+  prefix?: string;
+  suffix?: string;
+  // Eigene Formatierung des Zwischenwerts (z. B. „128,4k", „6,1%"). Überschreibt mode.
+  format?: (n: number) => string;
+}): React.JSX.Element {
+  const [display, setDisplay] = useState(value);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const reduce =
+      typeof matchMedia !== 'undefined' &&
+      matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const node = ref.current;
+    if (reduce || !node || typeof IntersectionObserver === 'undefined') {
+      setDisplay(value);
+      return;
+    }
+    const run = (): void => {
+      if (started.current) return;
+      started.current = true;
+      const start = performance.now();
+      const tick = (now: number): void => {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        setDisplay(value * eased);
+        if (p < 1) requestAnimationFrame(tick);
+        else setDisplay(value);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          run();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [value, duration]);
+
+  const text = format ? format(display) : fmtNum(Math.round(display), mode);
+  return (
+    <span ref={ref} style={{ fontVariantNumeric: 'tabular-nums' }}>
+      {prefix}
+      {text}
+      {suffix}
+    </span>
+  );
 }
 
 export function Delta({ value, up }: { value: number; up: boolean }): React.JSX.Element {

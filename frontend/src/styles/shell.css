@@ -9,8 +9,9 @@
   inset: 0;
 }
 
-/* Bottom-Nav nur am Handy sichtbar. */
-.shell-bottomnav {
+/* Handy-Shell (Prototyp-Nav .nav + KI-FAB .ai-fab) nur am Handy sichtbar.
+   Die .nav-/.ai-fab-Optik kommt 1:1 aus styles.css; hier nur Ein-/Ausblenden. */
+.shell-phone {
   display: none;
 }
 
@@ -45,49 +46,12 @@
     display: none;
   }
 
-  .shell-bottomnav {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    gap: 4px;
-    height: 76px;
-    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
-    background: color-mix(in oklab, var(--bg-2) 92%, transparent);
-    border-top: 1px solid var(--line);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  /* Handy: Prototyp-Nav + KI-FAB einblenden (Optik 1:1 aus styles.css). */
+  .shell-phone {
+    display: block;
   }
-  .shell-bn-item {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    background: none;
-    border: 0;
-    cursor: pointer;
-    padding: 6px 4px;
-    border-radius: var(--r-sm);
-    color: var(--text-3);
-    font-family: var(--ff);
-    font-weight: 600;
-    font-size: 11px;
-    text-decoration: none;
-    transition: color 0.16s;
-  }
-  .shell-bn-ic {
-    color: var(--text-3);
-    display: flex;
-    transition: color 0.16s;
-  }
-  .shell-bn-item.on,
-  .shell-bn-item.on .shell-bn-ic {
-    color: var(--accent-fg);
+  /* Desktop-KI-FAB am Handy ausblenden — dort übernimmt der .ai-fab. */
+  .web-fab {
+    display: none;
   }
 }

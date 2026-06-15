@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Icon, type IconName } from '../../components/Icon';
-import { ChannelBadge, Delta, Spark, fmtNum, useReveal } from '../../components/ui';
+import { ChannelBadge, CountUp, Delta, Spark, fmtNum, useReveal } from '../../components/ui';
 import { ANA, CHANNELS, REACH_SERIES, TOP_POSTS, type AnaKpi } from '../../lib/mockData';
 
 /**
@@ -14,18 +14,21 @@ interface AnView {
   color: string;
   icon: IconName;
   heroLabel: string;
-  heroVal: string;
+  heroNum: number;
+  heroFmt: (n: number) => string;
   heroDelta: number;
   series: number[];
   kpis: AnaKpi[];
 }
 
+const anDec1 = (n: number): string => n.toFixed(1).replace('.', ',');
+
 function anView(sel: Source): AnView {
   if (sel === 'google')
-    return { color: ANA.google.color, icon: 'search', heroLabel: 'Impressionen', heroVal: '1,24 Mio', heroDelta: 9.1, series: ANA.google.series, kpis: ANA.google.kpis };
+    return { color: ANA.google.color, icon: 'search', heroLabel: 'Impressionen', heroNum: 1.24, heroFmt: (n) => n.toFixed(2).replace('.', ',') + ' Mio', heroDelta: 9.1, series: ANA.google.series, kpis: ANA.google.kpis };
   if (sel === 'meta')
-    return { color: ANA.meta.color, icon: 'globe', heroLabel: 'Reichweite', heroVal: '198K', heroDelta: 14.2, series: ANA.meta.series, kpis: ANA.meta.kpis };
-  return { color: 'var(--accent-fg)', icon: 'chart', heroLabel: 'Gesamtreichweite', heroVal: '284,5K', heroDelta: 12.4, series: REACH_SERIES.slice(-16), kpis: ANA.gesamtKpis };
+    return { color: ANA.meta.color, icon: 'globe', heroLabel: 'Reichweite', heroNum: 198, heroFmt: (n) => Math.round(n) + 'K', heroDelta: 14.2, series: ANA.meta.series, kpis: ANA.meta.kpis };
+  return { color: 'var(--accent-fg)', icon: 'chart', heroLabel: 'Gesamtreichweite', heroNum: 284.5, heroFmt: (n) => anDec1(n) + 'K', heroDelta: 12.4, series: REACH_SERIES.slice(-16), kpis: ANA.gesamtKpis };
 }
 
 const AN_GOOGLE_TOP = [
@@ -69,7 +72,7 @@ export function AnalyticsScreen(): React.JSX.Element {
               <Icon name={v.icon} size={13} style={{ color: v.color }} />
               {v.heroLabel}
             </div>
-            <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 34, lineHeight: 1.05, marginTop: 4 }}>{v.heroVal}</div>
+            <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 34, lineHeight: 1.05, marginTop: 4 }}><CountUp value={v.heroNum} format={v.heroFmt} /></div>
           </div>
           <Delta value={v.heroDelta} up />
         </div>

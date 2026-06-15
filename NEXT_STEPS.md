@@ -4,7 +4,12 @@
 > Stand, wie man lokal entwickelt/deployt, wichtige Stolpersteine und die konkreten
 > nächsten Aufgaben. Vollständige Spezifikation: `../G-Hub – Bauplan für Claude Code.md`.
 
-_Stand: Phase 0 abgeschlossen und **live auf Railway**._
+_Stand: Phase 0 + Phase-1-Schritte 1–4 lokal fertig (committet, **noch zu pushen
+bzw. gepusht**). Phase 0 ist **live auf Railway**._
+
+> **Hier weitermachen (nächste Session):** Phase 1, **Schritt 5 — Kampagnen**
+> (`Campaign`/`Measure`/`Discount`, Bauplan §4.4) als nächster Fachbereich, analog
+> zum Muster in §5. Siehe „Empfohlene Reihenfolge" (§6) — Schritte 1–4 sind erledigt.
 
 ---
 
@@ -24,12 +29,31 @@ _Stand: Phase 0 abgeschlossen und **live auf Railway**._
 - **Deployment**: GitHub `DerRobin97/g-hub` → Railway Auto-Deploy
   - 4 Services: **backend**, **frontend**, **Postgres**, **Redis**
 
+### ✅ Fertig (Phase 1 — Schritte 1–4, lokal committet)
+
+- **Schritt 1 — App-Shell + Routing** (`b9aecd7`): React-Router, Desktop-Sidebar/Topbar
+  (`app/AppShell.tsx`) + responsive Bottom-Nav, Layout-Varianten full/rail/dual,
+  `AppearanceProvider` an `GET/PUT /api/me/appearance` gebunden (neues Backend-`me`-Modul),
+  Icon nach TS migriert. Platzhalter-Seiten Projekte/Analytics/Profil.
+- **Schritt 2 — Dashboard-Grundgerüst** (`dac145c`): Layout aus `dashboard.jsx` mit
+  Platzhalter-Daten (KPI-Leiste, Fokus-Karte, Kampagnen, geplante Posts, Aufgaben/Team,
+  Asset-Shortcut); Präsentations-Primitive in `components/ui.tsx` (Delta/Spark/Ring/…).
+- **Schritt 3 — Aufgaben** (`7b182e2`): `Task` + `TaskAssignee` + Checkliste (§4.6),
+  `tasks`-Modul `GET/POST/GET:id/PATCH/DELETE /api/tasks` (workspace-gescopt),
+  „Meine Aufgaben"-UI (`features/tasks/`), Route `/profil/aufgaben`.
+- **Schritt 4 — Projektmanager** (`b6a30bf`): `Project`/`Phase`/`ProjectTask` (§4.5),
+  `projects`-Modul (Projekt-/Phasen-/Task-CRUD + `GET /api/projects/members`),
+  Übersicht + Projekt-Detail (Gruppierung, Abhaken, Phase/Aufgabe anlegen) +
+  Task-Detail-Modal (`features/projects/`), Routen `/projekte/projektmanager[/:projectId]`.
+
+> **Alle vier Schritte sind durch Typecheck + Build + Lint gegangen; die CRUD-APIs
+> (Tasks, Projects) wurden lokal per curl verifiziert.**
+
 ### ⏳ Noch nicht gebaut
 
-- **App-Shell** (Sidebar/Topbar, responsive Bottom-Nav) — aktuell nur die „Hallo"-Karte
-- **Routing** (React Router) — aktuell nur Auth-Gate per Conditional
-- Alle Fachbereiche (Phase 1+): Projektmanager, Aufgaben, Kampagnen, Jahresplan,
-  Assets, Zeiterfassung, Dashboard, Analytics, Planer, News, KI
+- **Kampagnen** (§4.4) ← **als Nächstes**, dann Jahresplan, Zeiterfassung, Assets
+- Dashboard auf echte Aggregate umstellen (aktuell Platzhalter)
+- Planer (Social-Media), News, Suche, Mitteilungen, Analytics, KI
 - BullMQ-Jobs (Redis ist bereitgestellt, aber noch nicht verdrahtet)
 - Tests, Seeds, Audit-Log, DSGVO
 
@@ -96,6 +120,12 @@ Prüfen: `curl http://localhost:3000/api/health` → `{"status":"ok","db":"up",.
    Bei neuer Frontend-Domain → `FRONTEND_URL` am Backend anpassen.
 5. **Migrationen** laufen beim Backend-Start automatisch (`prisma migrate deploy` im
    Dockerfile-CMD). Neue Migration lokal erzeugen und **committen**.
+   - Vor `prisma migrate dev` muss **Docker Desktop laufen** (`open -a Docker`) und die DB
+     hochgefahren sein (`docker compose up -d postgres`).
+   - Prisma findet `DATABASE_URL` nicht automatisch (sie liegt in `g-hub/.env`, nicht in
+     `backend/`). Daher im `backend/`-Ordner vorher laden, z. B.:
+     `set -a && . ../.env && set +a && npx prisma migrate dev --name <name>`.
+   - Bisherige Migrationen: `…_init_auth_workspace`, `…_add_tasks`, `…_add_projects`.
 6. **Google-Login** ist die einzige Anmeldeoption. In der Google Console müssen
    eingetragen sein:
    - Redirect-URI: `https://g-hub-production.up.railway.app/api/auth/google/callback`
@@ -125,16 +155,15 @@ Beispiel „Aufgaben" (Task) — gilt analog für Kampagnen, Projekte, Jahrespla
 
 > Ziel von Phase 1: voll nutzbares internes Tool mit echten Daten (ohne externe APIs).
 
-1. **App-Shell + Routing** (zuerst!) — React Router, Sidebar/Topbar aus `main-web.jsx`,
-   responsive Bottom-Nav aus `main.jsx`, Layout-Varianten full/rail/dual. Appearance-
-   Einstellungen (Theme/Akzent) anbinden an `GET/PUT /api/me/appearance` (Endpoint noch
-   zu bauen). Referenz-Screens: Prototyp `app/*.jsx`.
-2. **Dashboard-Grundgerüst** (`dashboard.jsx`) — erstmal Platzhalter-Kacheln, später echte
-   Aggregate.
-3. **Aufgaben** (`Task`, konsolidiert — Bauplan §4.6) — Modell + CRUD-API + „Meine
-   Aufgaben"-UI (`aufgaben.jsx`). Guter erster CRUD-Vertikalschnitt.
-4. **Projektmanager** (`Project`/`Phase`/`ProjectTask` — §4.5) inkl. `projektmanager.jsx`.
-5. **Kampagnen** (`Campaign`/`Measure`/`Discount` — §4.4) inkl. `kampagnen.jsx`.
+1. ~~**App-Shell + Routing**~~ ✅ erledigt (`b9aecd7`).
+2. ~~**Dashboard-Grundgerüst** (`dashboard.jsx`)~~ ✅ erledigt (`dac145c`) — noch Platzhalter-Daten.
+3. ~~**Aufgaben** (`Task`, §4.6)~~ ✅ erledigt (`7b182e2`).
+4. ~~**Projektmanager** (`Project`/`Phase`/`ProjectTask` — §4.5)~~ ✅ erledigt (`b6a30bf`).
+5. **← HIER WEITER: Kampagnen** (`Campaign`/`Measure`/`Discount` — §4.4) inkl. `kampagnen.jsx`.
+   Muster wie bei Aufgaben/Projektmanager: Prisma-Modelle (mit `workspaceId`) + Migration,
+   `campaigns`-Modul (CRUD, `JwtAuthGuard`, workspace-gescopt), shared-DTOs, `lib/api.ts`,
+   Feature-UI unter `features/campaigns/`, Route unter `/projekte/kampagnen`. Danach das
+   Dashboard-„Aktive Kampagnen" und den Dashboard-Shortcut auf echte Daten umstellen.
 6. **Jahresplan** (`PlanMonth`/`PlanTheme`/`PlanLink` — §4.8) + **Seed** aus `JP_MONTHS`.
 7. **Zeiterfassung** (`TimeEntry`/`AbsenceBalance` — §4.11) — Stempeluhr-State-Machine.
 8. **Assets** (§4.7) — Upload zu S3-kompatiblem Bucket (Provider noch offen, §14).

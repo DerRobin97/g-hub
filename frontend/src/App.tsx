@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProjektePage } from './pages/ProjektePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ProfilPage } from './pages/ProfilPage';
+import { AufgabenPage } from './features/tasks/AufgabenPage';
 
 /**
  * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
@@ -33,6 +34,7 @@ export function App(): React.JSX.Element {
         <Route path="projekte/:area" element={<ProjektePage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="profil" element={<ProfilPage />} />
+        <Route path="profil/aufgaben" element={<AufgabenPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

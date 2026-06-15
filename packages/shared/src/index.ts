@@ -34,6 +34,43 @@ export type TaskStatus = (typeof TASK_STATUS)[number];
 export const TASK_PRIORITY = ['high', 'med', 'low'] as const;
 export type TaskPriority = (typeof TASK_PRIORITY)[number];
 
+// Rolle des/der Beteiligten an einer Aufgabe (Verantwortlich vs. Mitwirkend).
+export const TASK_ROLES = ['lead', 'collab'] as const;
+export type TaskRole = (typeof TASK_ROLES)[number];
+
+// Geteilte Form einer Aufgabe für API + Frontend (Bauplan §4.6).
+export interface ChecklistItemDto {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
+export interface TaskAssigneeDto {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface TaskDto {
+  id: string;
+  title: string;
+  description: string | null;
+  projectText: string | null;
+  dueDate: string | null;
+  dueLabel: string | null;
+  time: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  role: TaskRole;
+  tag: string | null;
+  completedAt: string | null;
+  createdById: string;
+  assignees: TaskAssigneeDto[];
+  checklist: ChecklistItemDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Analytics-Quellen — Bauplan §4.10 ---
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];

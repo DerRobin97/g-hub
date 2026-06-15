@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useAppearance, type WebLayout } from '../app/AppearanceContext';
 import type { AccentSelection, Theme } from '../lib/appearance';
+import { Icon } from '../components/Icon';
 
 const THEME_OPTIONS: Array<{ key: Theme; label: string }> = [
   { key: 'light', label: 'Weiß' },
@@ -54,6 +56,7 @@ function SegRow<T extends string>({
 /** Profil + Darstellungs-Einstellungen (an GET/PUT /api/me/appearance gebunden). */
 export function ProfilPage(): React.JSX.Element {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { theme, accentSel, customAccent, webLayout, setTheme, setAccent, setWebLayout } =
     useAppearance();
 
@@ -91,6 +94,35 @@ export function ProfilPage(): React.JSX.Element {
           Abmelden
         </button>
       </section>
+
+      <button
+        onClick={() => navigate('/profil/aufgaben')}
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--line)',
+          borderRadius: 'var(--r-md)',
+          boxShadow: 'var(--shadow)',
+          padding: '18px 22px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          cursor: 'pointer',
+          color: 'var(--text)',
+          font: 'inherit',
+          textAlign: 'left',
+        }}
+      >
+        <span className="kpi-ico" style={{ width: 40, height: 40, borderRadius: 12 }}>
+          <Icon name="check" size={19} />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Meine Aufgaben</div>
+          <div style={{ color: 'var(--text-3)', fontSize: 13, marginTop: 2 }}>
+            Persönliche To-dos & Wochenkalender
+          </div>
+        </div>
+        <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
+      </button>
 
       <section
         style={{

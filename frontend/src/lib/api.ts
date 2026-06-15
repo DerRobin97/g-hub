@@ -2,6 +2,8 @@
  * Minimaler API-Client. Basis-URL aus VITE_API_URL (Default: /api via Vite-Proxy).
  * Wird in späteren Phasen durch TanStack-Query-Hooks ergänzt (Bauplan §3).
  */
+import type { TaskDto, TaskPriority, TaskRole, TaskStatus } from '@g-hub/shared';
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
 export class ApiError extends Error {
@@ -45,6 +47,14 @@ export function apiPost<T>(path: string, body?: unknown): Promise<T> {
 
 export function apiPut<T>(path: string, body?: unknown): Promise<T> {
   return request<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined });
+}
+
+export function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  return request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined });
+}
+
+export function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, { method: 'DELETE' });
 }
 
 // --- Health ---
@@ -129,4 +139,53 @@ export function getAppearance(): Promise<AppearancePref> {
 
 export function updateAppearance(patch: AppearanceUpdate): Promise<AppearancePref> {
   return apiPut<AppearancePref>('/me/appearance', patch);
+}
+
+// --- Aufgaben / Tasks (Bauplan §4.6 / §5.1) ---
+export type { TaskDto, ChecklistItemDto, TaskAssigneeDto } from '@g-hub/shared';
+
+export interface TaskFilters {
+  assignee?: 'me';
+  status?: TaskStatus;
+  date?: string; // YYYY-MM-DD
+}
+
+export interface TaskInput {
+  title: string;
+  description?: string | null;
+  projectText?: string | null;
+  dueDate?: string | null;
+  dueLabel?: string | null;
+  time?: string | null;
+  priority?: TaskPriority;
+  status?: TaskStatus;
+  role?: TaskRole;
+  tag?: string | null;
+  assigneeIds?: string[];
+  checklist?: Array<{ title: string; done?: boolean }>;
+}
+
+export function listTasks(filters: TaskFilters = {}): Promise<TaskDto[]> {
+  const qs = new URLSearchParams();
+  if (filters.assignee) qs.set('assignee', filters.assignee);
+  if (filters.status) qs.set('status', filters.status);
+  if (filters.date) qs.set('date', filters.date);
+  const suffix = qs.toString() ? `?${qs.toString()}` : '';
+  return apiGet<TaskDto[]>(`/tasks${suffix}`);
+}
+
+export function getTask(id: string): Promise<TaskDto> {
+  return apiGet<TaskDto>(`/tasks/${id}`);
+}
+
+export function createTask(input: TaskInput): Promise<TaskDto> {
+  return apiPost<TaskDto>('/tasks', input);
+}
+
+export function updateTask(id: string, patch: Partial<TaskInput>): Promise<TaskDto> {
+  return apiPatch<TaskDto>(`/tasks/${id}`, patch);
+}
+
+export function deleteTask(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/tasks/${id}`);
 }

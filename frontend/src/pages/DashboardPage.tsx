@@ -172,7 +172,7 @@ export function DashboardPage(): React.JSX.Element {
       <div className="kpi-grid">
         <div
           className="card tap"
-          onClick={() => navigate('/profil')}
+          onClick={() => navigate('/profil/aufgaben')}
           style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
         >
           <div className="kpi-ico">

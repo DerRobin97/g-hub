@@ -42,6 +42,7 @@ model Workspace {
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
   memberships Membership[]
+  tasks       Task[]
 
   @@map("workspaces")
 }
@@ -59,8 +60,10 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  memberships Membership[]
-  appearance  AppearancePref?
+  memberships     Membership[]
+  appearance      AppearancePref?
+  tasksCreated    Task[]         @relation("TaskCreatedBy")
+  taskAssignments TaskAssignee[]
 
   @@map("users")
 }
@@ -96,4 +99,81 @@ model AppearancePref {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("appearance_prefs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// §4.6 Aufgaben — EINE konsolidierte Task-Entität (persönlich + Team).
+// „Meine Aufgaben" = Filter assignees enthält mich; „Team" = alle des Workspace.
+// ─────────────────────────────────────────────────────────────
+
+enum TaskStatus {
+  offen
+  arbeit
+  erledigt
+}
+
+enum TaskPriority {
+  high
+  med
+  low
+}
+
+enum TaskRole {
+  lead
+  collab
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  workspaceId String       @map("workspace_id")
+  title       String
+  description String?
+  // Freier Projektname, bis die Projekt-Entität existiert (§4.5).
+  projectText String?      @map("project_text")
+  dueDate     DateTime?    @map("due_date")
+  // Anzeige-Label aus dem Prototyp (z. B. „Heute"); optional zusätzlich zum Datum.
+  dueLabel    String?      @map("due_label")
+  time        String?
+  priority    TaskPriority @default(med)
+  status      TaskStatus   @default(offen)
+  role        TaskRole     @default(lead)
+  tag         String?
+  createdById String       @map("created_by_id")
+  completedAt DateTime?    @map("completed_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  workspace Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User                @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  assignees TaskAssignee[]
+  checklist TaskChecklistItem[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@map("tasks")
+}
+
+model TaskAssignee {
+  taskId String @map("task_id")
+  userId String @map("user_id")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@index([userId])
+  @@map("task_assignees")
+}
+
+model TaskChecklistItem {
+  id       String  @id @default(uuid())
+  taskId   String  @map("task_id")
+  title    String
+  done     Boolean @default(false)
+  position Int     @default(0)
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_checklist_items")
 }

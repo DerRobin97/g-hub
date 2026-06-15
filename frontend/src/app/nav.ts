@@ -55,6 +55,7 @@ export function headFor(pathname: string, firstName?: string): Head {
     return { kicker: 'Übersicht', title: 'Projekte' };
   }
   if (pathname.startsWith('/analytics')) return { kicker: 'Auswertung', title: 'Analytics' };
+  if (pathname === '/profil/aufgaben') return { kicker: 'Profil', title: 'Meine Aufgaben' };
   if (pathname.startsWith('/profil')) return { kicker: 'Konto', title: 'Profil' };
   return { kicker: 'Gerber-Hub', title: 'G-Hub' };
 }

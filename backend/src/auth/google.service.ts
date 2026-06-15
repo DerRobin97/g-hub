@@ -29,12 +29,17 @@ export class GoogleService {
     const clientSecret = this.config.get<string>('GOOGLE_CLIENT_SECRET');
     // Redirect-URI muss in Produktion auf die FRONTEND-Domain zeigen, damit der
     // OAuth-Callback über den /api-Proxy läuft und die Auth-Cookies first-party
-    // gesetzt werden (sonst Cross-Site → Mobile-Login bricht). Default daher aus
-    // FRONTEND_URL abgeleitet; per GOOGLE_LOGIN_REDIRECT_URI überschreibbar.
+    // gesetzt werden (sonst Cross-Site → Mobile-Login bricht).
+    // In Produktion daher IMMER aus FRONTEND_URL ableiten (eine evtl. veraltete
+    // GOOGLE_LOGIN_REDIRECT_URI auf die Backend-Domain wird bewusst ignoriert).
+    // Lokal: explizite GOOGLE_LOGIN_REDIRECT_URI verwenden (localhost-Backend).
+    const isProd = this.config.get<string>('NODE_ENV') === 'production';
     const frontendUrl = this.config.get<string>('FRONTEND_URL');
+    const derived = frontendUrl ? `${frontendUrl}/api/auth/google/callback` : undefined;
     const redirectUri =
-      this.config.get<string>('GOOGLE_LOGIN_REDIRECT_URI') ??
-      (frontendUrl ? `${frontendUrl}/api/auth/google/callback` : undefined);
+      isProd && derived
+        ? derived
+        : (this.config.get<string>('GOOGLE_LOGIN_REDIRECT_URI') ?? derived);
     if (!clientId || !clientSecret || !redirectUri) {
       throw new InternalServerErrorException('Google-Login ist nicht konfiguriert (.env prüfen).');
     }

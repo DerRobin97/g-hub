@@ -16,6 +16,43 @@ Phase 0 ist **live auf Railway**._
 
 ---
 
+## 0. Schnellstart für die nächste Session
+
+**Was ist passiert (zuletzt):**
+- **Backend-Vertikalschnitte fertig** (Prisma + NestJS-Modul + Migration + shared-DTOs +
+  `lib/api.ts` + UI, jeweils per curl getestet): Aufgaben, Projektmanager, Kampagnen,
+  Jahresplan (+Seed), **Zeiterfassung** (Stempeluhr-State-Machine, `time-tracking`-Modul).
+- **Kompletter 1:1-Design-Rollout (design-first, statische Daten)**: Ladescreen
+  `<gerber-hub-loader>` (`public/gerberhub-loader.js`) + Logo (`public/gerber-hub-logo.svg`),
+  Projekte-Hub, Analytics, Social-Media-Planer (+ Unterseiten + session-lokaler Store),
+  News-Sektion, alle Sheets (Erstellen/Compose/Suche/Mitteilungen/Team/Assets/Aufgaben/
+  Zeit/Post), KI-Assistent (Dock/FAB/Sheet, canned replies), Shell-Verkabelung
+  (Erstellen/Suche/Alerts/KI). Overlay/Sheet-System: `app/OverlayContext.tsx` +
+  `components/Sheet.tsx` + `features/sheets/registry.tsx`.
+- Mock-Daten zentral in **`frontend/src/lib/mockData.ts`**. Die CSS ist **byte-identisch**
+  zum Prototyp migriert (`frontend/src/styles/`), daher beim Portieren **keine neuen
+  CSS-Regeln** nötig — nur Prototyp-`className`s + Inline-Styles exakt übernehmen.
+- Alles auf `main` gepusht (Railway Auto-Deploy). Migrationen laufen beim Backend-Start.
+
+**Wichtige Architektur-Hinweise:**
+- Echte Daten kommen aus dem Backend über `lib/api.ts`; design-first-Bereiche nutzen
+  `lib/mockData.ts`. Beim „Echt-machen" eines Bereichs: Mock durch API-Aufrufe ersetzen
+  (Muster: wie `WorkTimeSheet` jetzt `lib/api.ts` nutzt statt `WORKTIME`).
+- Neue Prototyp-Screens 1:1 portieren: Quelle unter
+  `../Marketing-Hub - APP-SaaS/G-HubAPP (Marketing-Hub)/app/*.jsx`.
+- Lokaler Login ist **nur Google-OAuth** → UI lässt sich lokal schwer einloggen;
+  Verifikation v. a. über `typecheck`/`build`/`lint` + curl gegen die API.
+
+**Konkret als Nächstes (Optionen):**
+1. **Schritt 8 — Assets (§4.7):** braucht Storage-Entscheidung (Cloudflare R2 vs. AWS S3,
+   §14) — **vorher klären**. Modell `Asset`, presigned-Upload-Endpunkte, `AssetsSheet`/
+   Asset-Bibliothek an echtes Backend binden.
+2. **Design-first verdrahten:** Analytics / Planer / News / Suche / Mitteilungen an echte
+   Backends binden (jeweils Prisma + Modul + API + UI-Umstellung).
+3. **Dashboard-Aggregate** (KPIs/Fokus/Posts) echt machen (Kampagnen sind schon echt).
+
+---
+
 ## 1. Wo wir stehen
 
 ### ✅ Fertig (Phase 0 — Fundament, live)

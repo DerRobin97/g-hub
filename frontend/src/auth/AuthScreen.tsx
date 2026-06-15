@@ -1,28 +1,4 @@
-import { useState, type FormEvent } from 'react';
-import { useAuth } from './AuthContext';
-import { ApiError, googleConnectUrl } from '../lib/api';
-
-type Mode = 'login' | 'register';
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: '11px 13px',
-  borderRadius: '11px',
-  border: '1px solid var(--line-strong)',
-  background: 'var(--surface-2)',
-  color: 'var(--text)',
-  fontSize: '15px',
-  outline: 'none',
-};
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '13px',
-  fontWeight: 600,
-  color: 'var(--text-2)',
-  margin: '0 0 6px',
-};
+import { googleConnectUrl } from '../lib/api';
 
 function googleErrorText(code: string | null): string | null {
   if (!code) return null;
@@ -33,109 +9,43 @@ function googleErrorText(code: string | null): string | null {
 }
 
 export function AuthScreen(): React.JSX.Element {
-  const { login, register } = useAuth();
-  const [mode, setMode] = useState<Mode>('login');
-  const [name, setName] = useState('');
-  const [workspaceName, setWorkspaceName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const urlError = googleErrorText(new URLSearchParams(window.location.search).get('error'));
-
-  async function onSubmit(e: FormEvent): Promise<void> {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      if (mode === 'login') {
-        await login({ email, password });
-      } else {
-        await register({ name, email, password, workspaceName });
-      }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Etwas ist schiefgelaufen.');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '24px' }}>
       <section
         style={{
-          width: 'min(420px, 94vw)',
+          width: 'min(400px, 94vw)',
           background: 'var(--surface)',
           border: '1px solid var(--line)',
           borderRadius: '22px',
           boxShadow: 'var(--shadow)',
-          padding: '30px',
+          padding: '34px 30px',
+          textAlign: 'center',
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-          <div
-            style={{
-              width: '46px',
-              height: '46px',
-              margin: '0 auto 12px',
-              borderRadius: '13px',
-              background: 'var(--accent)',
-              color: 'var(--accent-ink)',
-              display: 'grid',
-              placeItems: 'center',
-              fontWeight: 800,
-              fontSize: '20px',
-            }}
-          >
-            G
-          </div>
-          <h1 style={{ margin: '0 0 2px', fontSize: '21px' }}>
-            {mode === 'login' ? 'Willkommen zurück' : 'Konto erstellen'}
-          </h1>
-          <p style={{ margin: 0, color: 'var(--text-2)', fontSize: '14px' }}>
-            G-Hub — Marketing-Hub
-          </p>
-        </div>
-
-        {/* Tab-Umschalter */}
         <div
           style={{
+            width: '48px',
+            height: '48px',
+            margin: '0 auto 14px',
+            borderRadius: '14px',
+            background: 'var(--accent)',
+            color: 'var(--accent-ink)',
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '4px',
-            padding: '4px',
-            background: 'var(--surface-2)',
-            borderRadius: '12px',
-            marginBottom: '20px',
+            placeItems: 'center',
+            fontWeight: 800,
+            fontSize: '22px',
           }}
         >
-          {(['login', 'register'] as Mode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => {
-                setMode(m);
-                setError(null);
-              }}
-              style={{
-                padding: '9px',
-                borderRadius: '9px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '14px',
-                background: mode === m ? 'var(--surface)' : 'transparent',
-                color: mode === m ? 'var(--text)' : 'var(--text-3)',
-                boxShadow: mode === m ? 'var(--shadow)' : 'none',
-              }}
-            >
-              {m === 'login' ? 'Anmelden' : 'Registrieren'}
-            </button>
-          ))}
+          G
         </div>
+        <h1 style={{ margin: '0 0 4px', fontSize: '22px' }}>Willkommen bei G-Hub</h1>
+        <p style={{ margin: '0 0 26px', color: 'var(--text-2)', fontSize: '14px' }}>
+          Melde dich an, um fortzufahren
+        </p>
 
-        {(error || urlError) && (
+        {urlError && (
           <div
             style={{
               background: 'color-mix(in oklab, var(--bad) 14%, var(--surface))',
@@ -144,105 +54,14 @@ export function AuthScreen(): React.JSX.Element {
               borderRadius: '11px',
               padding: '10px 13px',
               fontSize: '13px',
-              marginBottom: '16px',
+              marginBottom: '18px',
+              textAlign: 'left',
             }}
           >
-            {error ?? urlError}
+            {urlError}
           </div>
         )}
 
-        <form onSubmit={onSubmit}>
-          {mode === 'register' && (
-            <>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={labelStyle}>Name</label>
-                <input
-                  style={inputStyle}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Robin Hohe"
-                  required
-                  minLength={2}
-                />
-              </div>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={labelStyle}>Workspace-Name</label>
-                <input
-                  style={inputStyle}
-                  value={workspaceName}
-                  onChange={(e) => setWorkspaceName(e.target.value)}
-                  placeholder="Gerber Fachhandel"
-                  required
-                  minLength={2}
-                />
-              </div>
-            </>
-          )}
-
-          <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>E-Mail</label>
-            <input
-              style={inputStyle}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@firma.de"
-              required
-              autoComplete="email"
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>Passwort</label>
-            <input
-              style={inputStyle}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === 'register' ? 'mind. 8 Zeichen' : '••••••••'}
-              required
-              minLength={mode === 'register' ? 8 : 1}
-              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={busy}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '12px',
-              border: 'none',
-              cursor: busy ? 'default' : 'pointer',
-              fontWeight: 700,
-              fontSize: '15px',
-              background: 'var(--accent)',
-              color: 'var(--accent-ink)',
-              opacity: busy ? 0.7 : 1,
-            }}
-          >
-            {busy ? 'Bitte warten …' : mode === 'login' ? 'Anmelden' : 'Konto erstellen'}
-          </button>
-        </form>
-
-        {/* Trenner */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            margin: '18px 0',
-            color: 'var(--text-3)',
-            fontSize: '12px',
-          }}
-        >
-          <span style={{ flex: 1, height: '1px', background: 'var(--line)' }} />
-          oder
-          <span style={{ flex: 1, height: '1px', background: 'var(--line)' }} />
-        </div>
-
-        {/* Google-Login (serverseitiger OAuth-Flow) */}
         <a
           href={googleConnectUrl()}
           style={{
@@ -252,7 +71,7 @@ export function AuthScreen(): React.JSX.Element {
             gap: '10px',
             width: '100%',
             boxSizing: 'border-box',
-            padding: '11px',
+            padding: '13px',
             borderRadius: '12px',
             border: '1px solid var(--line-strong)',
             background: 'var(--surface-2)',

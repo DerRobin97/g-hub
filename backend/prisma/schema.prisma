@@ -45,6 +45,7 @@ model Workspace {
   tasks       Task[]
   projects    Project[]
   campaigns   Campaign[]
+  planMonths  PlanMonth[]
 
   @@map("workspaces")
 }
@@ -379,4 +380,80 @@ model Discount {
 
   @@index([measureId])
   @@map("discounts")
+}
+
+// ─────────────────────────────────────────────────────────────
+// §4.8 Jahresplan — Monat → Themen + Verzahnungen (Marketing-Kalender).
+// ─────────────────────────────────────────────────────────────
+
+// Geschäftsbereich eines Themas (Prototyp-Labels: Verkauf|Werkstatt|Vermietung|Saison|Frist).
+enum PlanCategory {
+  verkauf
+  service
+  vermietung
+  saison
+  frist
+}
+
+// Richtung einer Verzahnung (Rück-/Vorverweis auf einen anderen Monat).
+enum PlanLinkDirection {
+  back
+  fwd
+}
+
+model PlanMonth {
+  id          String   @id @default(uuid())
+  workspaceId String   @map("workspace_id")
+  year        Int
+  // 1..12.
+  month       Int
+  // Quartal 1..4 (aus month abgeleitet).
+  quarter     Int
+  // Leitmotiv des Monats (z. B. „Brennholz & Werkstatt").
+  focus       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  themes    PlanTheme[]
+  links     PlanLink[]
+
+  @@unique([workspaceId, year, month])
+  @@index([workspaceId, year])
+  @@map("plan_months")
+}
+
+model PlanTheme {
+  id          String       @id @default(uuid())
+  planMonthId String       @map("plan_month_id")
+  title       String
+  description String?
+  category    PlanCategory @default(verkauf)
+  // Kanal-Schlüssel des Jahresplans (social/ads/newsletter/flyer).
+  channels    String[]
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  planMonth PlanMonth @relation(fields: [planMonthId], references: [id], onDelete: Cascade)
+
+  @@index([planMonthId])
+  @@map("plan_themes")
+}
+
+model PlanLink {
+  id          String            @id @default(uuid())
+  planMonthId String            @map("plan_month_id")
+  direction   PlanLinkDirection
+  // Ziel-Monat als Anzeige-Text (z. B. „Dezember", „März–Juni").
+  targetMonth String            @map("target_month")
+  text        String
+  order       Int               @default(0)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  planMonth PlanMonth @relation(fields: [planMonthId], references: [id], onDelete: Cascade)
+
+  @@index([planMonthId])
+  @@map("plan_links")
 }

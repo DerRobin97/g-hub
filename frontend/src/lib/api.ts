@@ -19,6 +19,11 @@ import type {
   MeasureType,
   DiscountDto,
   DiscountType,
+  PlanMonthDto,
+  PlanThemeDto,
+  PlanLinkDto,
+  PlanCategory,
+  PlanLinkDirection,
 } from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
@@ -369,4 +374,56 @@ export function updateDiscount(id: string, patch: Partial<DiscountInput>): Promi
 
 export function deleteDiscount(id: string): Promise<{ status: string }> {
   return apiDelete<{ status: string }>(`/discounts/${id}`);
+}
+
+// --- Jahresplan (Bauplan §4.8 / §5.1) ---
+export type { PlanMonthDto, PlanThemeDto, PlanLinkDto } from '@g-hub/shared';
+
+export interface PlanThemeInput {
+  title: string;
+  description?: string | null;
+  category?: PlanCategory;
+  channels?: string[];
+}
+
+export interface PlanLinkInput {
+  direction: PlanLinkDirection;
+  targetMonth: string;
+  text: string;
+}
+
+export function getPlanYear(year: number): Promise<PlanMonthDto[]> {
+  return apiGet<PlanMonthDto[]>(`/plan/${year}`);
+}
+
+export function seedPlanYear(year: number): Promise<PlanMonthDto[]> {
+  return apiPost<PlanMonthDto[]>(`/plan/${year}/seed`);
+}
+
+export function updatePlanMonth(year: number, month: number, focus: string | null): Promise<PlanMonthDto> {
+  return apiPatch<PlanMonthDto>(`/plan/${year}/months/${month}`, { focus });
+}
+
+export function createPlanTheme(year: number, month: number, input: PlanThemeInput): Promise<PlanMonthDto> {
+  return apiPost<PlanMonthDto>(`/plan/${year}/months/${month}/themes`, input);
+}
+
+export function updatePlanTheme(id: string, patch: Partial<PlanThemeInput>): Promise<PlanThemeDto> {
+  return apiPatch<PlanThemeDto>(`/plan-themes/${id}`, patch);
+}
+
+export function deletePlanTheme(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/plan-themes/${id}`);
+}
+
+export function createPlanLink(year: number, month: number, input: PlanLinkInput): Promise<PlanMonthDto> {
+  return apiPost<PlanMonthDto>(`/plan/${year}/months/${month}/links`, input);
+}
+
+export function updatePlanLink(id: string, patch: Partial<PlanLinkInput>): Promise<PlanLinkDto> {
+  return apiPatch<PlanLinkDto>(`/plan-links/${id}`, patch);
+}
+
+export function deletePlanLink(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/plan-links/${id}`);
 }

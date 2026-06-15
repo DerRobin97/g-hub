@@ -193,6 +193,63 @@ export interface CampaignDetailDto extends CampaignSummaryDto {
   measures: MeasureDto[];
 }
 
+// --- Jahresplan — Bauplan §4.8 ---
+// Geschäftsbereich eines Themas. Maschinen-Schlüssel; Labels via PLAN_CATEGORY_LABELS.
+export const PLAN_CATEGORIES = ['verkauf', 'service', 'vermietung', 'saison', 'frist'] as const;
+export type PlanCategory = (typeof PLAN_CATEGORIES)[number];
+
+export const PLAN_CATEGORY_LABELS: Record<PlanCategory, string> = {
+  verkauf: 'Verkauf',
+  service: 'Werkstatt',
+  vermietung: 'Vermietung',
+  saison: 'Saison',
+  frist: 'Frist',
+};
+
+// Kanäle des Jahresplans (eigene Liste, nicht die Social-CHANNELS aus §4.2).
+export const PLAN_CHANNELS = ['social', 'ads', 'newsletter', 'flyer'] as const;
+export type PlanChannel = (typeof PLAN_CHANNELS)[number];
+
+export const PLAN_CHANNEL_LABELS: Record<PlanChannel, string> = {
+  social: 'Social',
+  ads: 'Google Ads',
+  newsletter: 'Newsletter',
+  flyer: 'Flyer',
+};
+
+// Richtung einer Verzahnung (Rück-/Vorverweis).
+export const PLAN_LINK_DIRECTIONS = ['back', 'fwd'] as const;
+export type PlanLinkDirection = (typeof PLAN_LINK_DIRECTIONS)[number];
+
+export interface PlanThemeDto {
+  id: string;
+  planMonthId: string;
+  title: string;
+  description: string | null;
+  category: PlanCategory;
+  channels: string[];
+  order: number;
+}
+
+export interface PlanLinkDto {
+  id: string;
+  planMonthId: string;
+  direction: PlanLinkDirection;
+  targetMonth: string;
+  text: string;
+  order: number;
+}
+
+export interface PlanMonthDto {
+  id: string;
+  year: number;
+  month: number;
+  quarter: number;
+  focus: string | null;
+  themes: PlanThemeDto[];
+  links: PlanLinkDto[];
+}
+
 // --- Analytics-Quellen — Bauplan §4.10 ---
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];

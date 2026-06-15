@@ -54,6 +54,8 @@ export function headFor(pathname: string, firstName?: string): Head {
       return { kicker: 'Projekte', title: 'Projektmanager' };
     if (pathname.startsWith('/projekte/kampagnen'))
       return { kicker: 'Projekte', title: 'Kampagnenmanager' };
+    if (pathname.startsWith('/projekte/jahresplan'))
+      return { kicker: 'Projekte', title: 'Jahresplan' };
     const sub = PROJ_SUB.find((s) => pathname === `/projekte/${s.key}`);
     if (sub) return { kicker: 'Projekte', title: sub.name };
     return { kicker: 'Übersicht', title: 'Projekte' };

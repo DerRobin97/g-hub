@@ -12,6 +12,8 @@ import { ProjectDetailPage } from './features/projects/ProjectDetailPage';
 import { KampagnenPage } from './features/campaigns/KampagnenPage';
 import { CampaignDetailPage } from './features/campaigns/CampaignDetailPage';
 import { MeasureDetailPage } from './features/campaigns/MeasureDetailPage';
+import { JahresplanPage } from './features/annual-plan/JahresplanPage';
+import { MonthDetailPage } from './features/annual-plan/MonthDetailPage';
 
 /**
  * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
@@ -41,6 +43,8 @@ export function App(): React.JSX.Element {
         <Route path="projekte/kampagnen" element={<KampagnenPage />} />
         <Route path="projekte/kampagnen/:campaignId" element={<CampaignDetailPage />} />
         <Route path="projekte/kampagnen/:campaignId/massnahme/:measureId" element={<MeasureDetailPage />} />
+        <Route path="projekte/jahresplan" element={<JahresplanPage />} />
+        <Route path="projekte/jahresplan/:month" element={<MonthDetailPage />} />
         <Route path="projekte/:area" element={<ProjektePage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="profil" element={<ProfilPage />} />

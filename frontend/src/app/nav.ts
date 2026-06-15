@@ -56,6 +56,12 @@ export function headFor(pathname: string, firstName?: string): Head {
       return { kicker: 'Projekte', title: 'Kampagnenmanager' };
     if (pathname.startsWith('/projekte/jahresplan'))
       return { kicker: 'Projekte', title: 'Jahresplan' };
+    if (pathname.startsWith('/projekte/planer')) {
+      if (pathname.startsWith('/projekte/planer/freigabe')) return { kicker: 'Planer', title: 'Freigabe' };
+      if (pathname.startsWith('/projekte/planer/post')) return { kicker: 'Planer', title: 'Post' };
+      if (pathname.startsWith('/projekte/planer/tag')) return { kicker: 'Planer', title: 'Tagesplan' };
+      return { kicker: 'Projekte', title: 'Social-Media-Planer' };
+    }
     const sub = PROJ_SUB.find((s) => pathname === `/projekte/${s.key}`);
     if (sub) return { kicker: 'Projekte', title: sub.name };
     return { kicker: 'Übersicht', title: 'Projekte' };

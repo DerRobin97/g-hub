@@ -50,6 +50,8 @@ export function headFor(pathname: string, firstName?: string): Head {
   if (pathname === '/' || pathname === '')
     return { kicker: 'Gerber-Hub', title: `${greeting()}${firstName ? ', ' + firstName : ''}` };
   if (pathname.startsWith('/projekte')) {
+    if (pathname.startsWith('/projekte/projektmanager'))
+      return { kicker: 'Projekte', title: 'Projektmanager' };
     const sub = PROJ_SUB.find((s) => pathname === `/projekte/${s.key}`);
     if (sub) return { kicker: 'Projekte', title: sub.name };
     return { kicker: 'Übersicht', title: 'Projekte' };

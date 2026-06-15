@@ -71,6 +71,56 @@ export interface TaskDto {
   updatedAt: string;
 }
 
+// --- Projektmanager — Bauplan §4.5 ---
+export const PROJECT_TASK_PRIORITY = ['high', 'mid', 'low'] as const;
+export type ProjectTaskPriority = (typeof PROJECT_TASK_PRIORITY)[number];
+
+export interface ProjectMemberDto {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface ProjectTaskDto {
+  id: string;
+  phaseId: string;
+  title: string;
+  description: string | null;
+  done: boolean;
+  completedAt: string | null;
+  dueDate: string | null;
+  dueLabel: string | null;
+  priority: ProjectTaskPriority;
+  links: string[];
+  order: number;
+  members: ProjectMemberDto[];
+}
+
+export interface PhaseDto {
+  id: string;
+  name: string;
+  order: number;
+  tasks: ProjectTaskDto[];
+}
+
+export interface ProjectSummaryDto {
+  id: string;
+  name: string;
+  kind: string | null;
+  dueDate: string | null;
+  dueLabel: string | null;
+  budgetText: string | null;
+  lead: ProjectMemberDto | null;
+  members: ProjectMemberDto[];
+  taskCount: number;
+  doneCount: number;
+}
+
+export interface ProjectDetailDto extends ProjectSummaryDto {
+  description: string | null;
+  phases: PhaseDto[];
+}
+
 // --- Analytics-Quellen — Bauplan §4.10 ---
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];

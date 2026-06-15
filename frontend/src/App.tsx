@@ -7,6 +7,8 @@ import { ProjektePage } from './pages/ProjektePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ProfilPage } from './pages/ProfilPage';
 import { AufgabenPage } from './features/tasks/AufgabenPage';
+import { ProjektmanagerPage } from './features/projects/ProjektmanagerPage';
+import { ProjectDetailPage } from './features/projects/ProjectDetailPage';
 
 /**
  * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
@@ -31,6 +33,8 @@ export function App(): React.JSX.Element {
       <Route element={<AppShell />}>
         <Route index element={<DashboardPage />} />
         <Route path="projekte" element={<ProjektePage />} />
+        <Route path="projekte/projektmanager" element={<ProjektmanagerPage />} />
+        <Route path="projekte/projektmanager/:projectId" element={<ProjectDetailPage />} />
         <Route path="projekte/:area" element={<ProjektePage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="profil" element={<ProfilPage />} />

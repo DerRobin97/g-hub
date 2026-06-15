@@ -43,6 +43,7 @@ model Workspace {
 
   memberships Membership[]
   tasks       Task[]
+  projects    Project[]
 
   @@map("workspaces")
 }
@@ -64,6 +65,10 @@ model User {
   appearance      AppearancePref?
   tasksCreated    Task[]         @relation("TaskCreatedBy")
   taskAssignments TaskAssignee[]
+  projectsLed     Project[]      @relation("ProjectLead")
+  projectsCreated Project[]      @relation("ProjectCreatedBy")
+  projectMemberships     ProjectMember[]
+  projectTaskMemberships ProjectTaskMember[]
 
   @@map("users")
 }
@@ -176,4 +181,98 @@ model TaskChecklistItem {
 
   @@index([taskId])
   @@map("task_checklist_items")
+}
+
+// ─────────────────────────────────────────────────────────────
+// §4.5 Projektmanager — Projekt → Phasen → Projekt-Aufgaben.
+// ─────────────────────────────────────────────────────────────
+
+enum ProjectTaskPriority {
+  high
+  mid
+  low
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  workspaceId String    @map("workspace_id")
+  name        String
+  kind        String?
+  dueDate     DateTime? @map("due_date")
+  dueLabel    String?   @map("due_label")
+  leadId      String?   @map("lead_id")
+  budgetText  String?   @map("budget_text")
+  description String?
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead      User?           @relation("ProjectLead", fields: [leadId], references: [id])
+  createdBy User            @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  members   ProjectMember[]
+  phases    Phase[]
+
+  @@index([workspaceId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  projectId String @map("project_id")
+  userId    String @map("user_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model Phase {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  name      String
+  order     Int    @default(0)
+
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   ProjectTask[]
+
+  @@index([projectId])
+  @@map("phases")
+}
+
+model ProjectTask {
+  id          String              @id @default(uuid())
+  phaseId     String              @map("phase_id")
+  title       String
+  description String?
+  done        Boolean             @default(false)
+  completedAt DateTime?           @map("completed_at")
+  dueDate     DateTime?           @map("due_date")
+  dueLabel    String?             @map("due_label")
+  priority    ProjectTaskPriority @default(mid)
+  // Verknüpfte Links/Referenzen (URL oder freie Beschreibung) — wie im Prototyp.
+  links       String[]
+  order       Int                 @default(0)
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  phase   Phase               @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  members ProjectTaskMember[]
+
+  @@index([phaseId])
+  @@map("project_tasks")
+}
+
+model ProjectTaskMember {
+  taskId String @map("task_id")
+  userId String @map("user_id")
+
+  task ProjectTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@index([userId])
+  @@map("project_task_members")
 }

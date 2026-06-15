@@ -2,7 +2,17 @@
  * Minimaler API-Client. Basis-URL aus VITE_API_URL (Default: /api via Vite-Proxy).
  * Wird in späteren Phasen durch TanStack-Query-Hooks ergänzt (Bauplan §3).
  */
-import type { TaskDto, TaskPriority, TaskRole, TaskStatus } from '@g-hub/shared';
+import type {
+  TaskDto,
+  TaskPriority,
+  TaskRole,
+  TaskStatus,
+  ProjectSummaryDto,
+  ProjectDetailDto,
+  ProjectTaskDto,
+  ProjectTaskPriority,
+  ProjectMemberDto,
+} from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
@@ -188,4 +198,85 @@ export function updateTask(id: string, patch: Partial<TaskInput>): Promise<TaskD
 
 export function deleteTask(id: string): Promise<{ status: string }> {
   return apiDelete<{ status: string }>(`/tasks/${id}`);
+}
+
+// --- Projektmanager (Bauplan §4.5 / §5.1) ---
+export type {
+  ProjectSummaryDto,
+  ProjectDetailDto,
+  ProjectTaskDto,
+  PhaseDto,
+  ProjectMemberDto,
+} from '@g-hub/shared';
+
+export interface ProjectInput {
+  name: string;
+  kind?: string | null;
+  dueDate?: string | null;
+  dueLabel?: string | null;
+  budgetText?: string | null;
+  description?: string | null;
+  leadId?: string;
+  memberIds?: string[];
+}
+
+export interface ProjectTaskInput {
+  title: string;
+  description?: string | null;
+  done?: boolean;
+  dueDate?: string | null;
+  dueLabel?: string | null;
+  priority?: ProjectTaskPriority;
+  memberIds?: string[];
+  links?: string[];
+}
+
+export function listProjects(): Promise<ProjectSummaryDto[]> {
+  return apiGet<ProjectSummaryDto[]>('/projects');
+}
+
+export function getProject(id: string): Promise<ProjectDetailDto> {
+  return apiGet<ProjectDetailDto>(`/projects/${id}`);
+}
+
+export function listProjectMembers(): Promise<ProjectMemberDto[]> {
+  return apiGet<ProjectMemberDto[]>('/projects/members');
+}
+
+export function createProject(input: ProjectInput): Promise<ProjectDetailDto> {
+  return apiPost<ProjectDetailDto>('/projects', input);
+}
+
+export function updateProject(id: string, patch: Partial<ProjectInput>): Promise<ProjectDetailDto> {
+  return apiPatch<ProjectDetailDto>(`/projects/${id}`, patch);
+}
+
+export function deleteProject(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/projects/${id}`);
+}
+
+export function createPhase(projectId: string, name: string): Promise<ProjectDetailDto> {
+  return apiPost<ProjectDetailDto>(`/projects/${projectId}/phases`, { name });
+}
+
+export function deletePhase(phaseId: string): Promise<ProjectDetailDto> {
+  return apiDelete<ProjectDetailDto>(`/phases/${phaseId}`);
+}
+
+export function createProjectTask(
+  phaseId: string,
+  input: ProjectTaskInput,
+): Promise<ProjectTaskDto> {
+  return apiPost<ProjectTaskDto>(`/phases/${phaseId}/tasks`, input);
+}
+
+export function updateProjectTask(
+  id: string,
+  patch: Partial<ProjectTaskInput>,
+): Promise<ProjectTaskDto> {
+  return apiPatch<ProjectTaskDto>(`/project-tasks/${id}`, patch);
+}
+
+export function deleteProjectTask(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/project-tasks/${id}`);
 }

@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { AuthScreen } from './auth/AuthScreen';
@@ -30,11 +31,18 @@ import { SHEET_REGISTRY } from './features/sheets/registry';
  */
 export function App(): React.JSX.Element {
   const { user, loading } = useAuth();
+  const [introDone, setIntroDone] = useState(false);
+  const finishIntro = useCallback(() => setIntroDone(true), []);
 
-  // Während die Sitzung geladen wird, zeigt der Ladescreen (Splash) Logo + Spinner.
-  if (loading) return <Splash />;
+  // Stille Sitzungsprüfung beim Start (kein Ladescreen) — verhindert den
+  // unerwünschten Splash VOR dem Login.
+  if (loading) return <div style={{ minHeight: '100vh', background: 'var(--bg)' }} />;
 
+  // Nicht eingeloggt → direkt zum Login, ohne Ladescreen.
   if (!user) return <AuthScreen />;
+
+  // Eingeloggt → Ladescreen einmal als App-Intro, dann die App aufdecken.
+  if (!introDone) return <Splash onDone={finishIntro} />;
 
   return (
     <PlanerProvider>

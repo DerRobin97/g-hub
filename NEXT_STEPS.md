@@ -1,5 +1,109 @@
 # G-Hub — Fortschritt & nächste Schritte (Session-Übergabe)
 
+<!-- ============================================================= -->
+<!--  SESSION-UPDATE 2026-06-15 — ZUERST LESEN                      -->
+<!-- ============================================================= -->
+
+## 🟥 Session-Update 2026-06-15 (neueste Übergabe — hier starten)
+
+Alles unten Genannte ist **committet und auf `main` gepusht** (Railway deployt
+automatisch). Commits dieser Session (neueste zuerst):
+
+| Commit | Inhalt |
+| --- | --- |
+| `9c27ebc` | fix(ui): mobile Bottom-Nav `position:fixed` (Versuch, **NICHT gelöst**, s. u.) |
+| `82059d7` | fix(auth): OAuth-Redirect in Prod immer aus `FRONTEND_URL` |
+| `63449b4` | fix(ui): Ladescreen nur nach Login (App-Intro) |
+| `0b2782b` | fix(auth): Mobile-Login — alles same-origin (`/api`-Proxy) |
+| `99a1a3a` | feat(search): globale Suche echt |
+| `91d6611` | feat(design): 1:1-Animationen + Handy-Shell (Phasen 1–2) |
+| `54394f9` | feat(assets): Schritt 8 — Asset-Bibliothek + Storage |
+| `e0fcbe5` | fix(auth): Login-Rücksprung via Same-Origin-Proxy (Frontend `server.mjs`) |
+
+### ✅ Erledigt & verifiziert
+- **Login (Desktop + Handy)**: Ursache war Cross-Site-/Drittanbieter-Cookies
+  (`up.railway.app` = Public-Suffix). Lösung: Frontend liefert `/api` selbst aus und
+  **proxyt ans Backend** (`frontend/server.mjs`, express + http-proxy-middleware),
+  `BASE_URL` fest auf `/api` (`frontend/src/lib/api.ts`), OAuth-Redirect in Prod aus
+  `FRONTEND_URL` abgeleitet (`backend/src/auth/google.service.ts`). Verifiziert per curl:
+  Proxy aktiv, `redirect_uri` = Frontend-Domain, State-Cookie first-party.
+  **Login klappt jetzt auf Desktop UND Handy** (vom User bestätigt).
+- **Ladescreen** erscheint nur noch als Intro **nach** dem Login (`App.tsx` Gating +
+  `Splash` `onDone`). Kein Splash mehr vor dem Login.
+- **Assets (Schritt 8)**: voll funktionsfähig lokal (MinIO), per curl getestet.
+- **Design Phase 1–2**: CountUp, gestaffelte Reveals (IntersectionObserver), Splash-Tempo
+  0.85, KI-Spark-Burst; mobile Liquid-Glass-Nav verkabelt (siehe Problem unten).
+- **Globale Suche** echt (`backend/src/search/`, `SearchSheet`).
+
+### 🔴 OFFENES PROBLEM (höchste Prio): Mobile Bottom-Nav wird NICHT angezeigt
+**Symptom:** Nach dem Login am Handy ist **keine** Menüleiste (Bottom-Nav) sichtbar.
+
+**Was bereits verifiziert ist (also NICHT die Ursache):**
+- Markup ist im deployten JS-Bundle vorhanden (`shell-phone`, `nav-fab`, `nav-wrap`).
+- CSS ist live korrekt: in `@media(max-width:860px)` gilt `.shell-phone{display:block}`,
+  `.web-shell .nav{position:fixed;z-index:60}`, `.web-shell .ai-fab{position:fixed;z-index:61}`,
+  `.web-fab{display:none}`, `.web-side{display:none}`.
+- Deploy ist live (Asset-Hashes der ausgelieferten CSS/JS = lokaler Build).
+- Trotz `position:fixed; z-index:60` am Viewport bleibt die Leiste unsichtbar.
+
+**Relevante Dateien:**
+- `frontend/src/app/AppShell.tsx` — rendert `.shell-phone > .nav (.nav-wrap mit 5 Slots) + .ai-fab`.
+- `frontend/src/styles/shell.css` — Ein-/Ausblende-/Positions-Regeln (≤860px).
+- `frontend/src/styles/styles.css` — Prototyp-`.nav`/`.nav-wrap`/`.nav-fab`/`.ai-fab` (byte-identisch).
+- `frontend/src/styles/web.css` — `.web-shell{position:absolute;inset:0;display:grid;overflow:hidden}`,
+  `.web-main{position:relative}`, `.web-ai{z-index:55}`.
+
+**Hypothesen für die nächste Session (zu prüfen):**
+1. **Media-Query matcht nicht** → Phone rendert evtl. Desktop-Layout. Test: Erscheint
+   stattdessen die **Sidebar** (`.web-side`)? Welche `window.innerWidth`/`matchMedia('(max-width:860px)')`?
+2. **Grid/Stacking/Overflow-Konflikt**: `.shell-phone` ist Grid-Item in `.web-shell`
+   (display:grid, overflow:hidden); evtl. verdeckt die mobile Browser-UI die fixed-Leiste
+   oder ein anderes Element liegt darüber.
+3. **Theme**: im Dunkelmodus ist die Liquid-Glass-Leiste sehr dezent (translucent) — evtl.
+   da, aber kaum sichtbar? (User-Theme klären.)
+4. **JS-Fehler** beim Rendern des Nav-Teils (Konsole am Handy prüfen).
+
+**Empfohlenes Vorgehen (WICHTIG):**
+- Zuerst **echtes Mobile-Rendering ansehen** (Remote-Debugging: Chrome `chrome://inspect`
+  oder Safari Web-Inspector am iPhone) → DOM + Computed-Styles von `.shell-phone`/`.nav`
+  inspizieren. Ohne Sicht aufs Rendering ist es Blindflug.
+- **Pragmatische Lösung statt Prototyp-`.nav`**: Die Prototyp-`.nav` ist für einen anderen
+  Container (Handy-Frame) gebaut. Besser eine **eigene, dedizierte Mobile-Bottom-Nav-
+  Komponente** mit eigenem, einfachem CSS schreiben (klar `position:fixed; left/right/bottom:0;
+  z-index:hoch`; eigene Klassen, keine Abhängigkeit vom `.web-shell`-Grid/`overflow`), Optik
+  danach an die Liquid-Glass-Vorgabe angleichen. Dann Nav-Collapse + KI-FAB daran hängen.
+- Alternativ lokal einen **Dev-Auth-Bypass** (nur Entwicklung) bauen, um die App-Shell ohne
+  Google-Login am Mobile-Viewport testen zu können.
+
+### 🟡 Offene User-/Infra-Aktionen
+- **Google-Console**: Redirect-URI `https://g-hub-frontend-production.up.railway.app/api/auth/google/callback`
+  muss eingetragen sein (sonst `redirect_uri_mismatch`).
+- **Assets-Storage-Provider** (Cloudflare R2 vs. AWS S3, §14) entscheiden + produktive
+  `STORAGE_*`-Variablen in Railway setzen — sonst sind Assets in Prod nicht nutzbar
+  (lokal läuft MinIO via docker-compose, Host-Ports 9002/9003).
+- **Visuelles QA** Animationen (Mobile/iPad).
+
+### 🟢 Offene Roadmap (Entwicklung)
+- **Dashboard teil-echt**: Task-/Asset-Zähler echt; Marketing-KPIs (Reichweite/Engagement/
+  Follower) + Analytics + Posts/Planer **blockiert durch Meta/Google** (Bauplan Phase 2/3).
+- **News/Mitteilungen** an echtes Backend binden (neue Modelle nötig).
+- **Design Phase 3** (iPad-Querformat `.ipad-land`) + **Phase 4** (Screen-Feinabgleich Doku Kap. 9).
+  ⚠️ Gegen die bewusste Web-Shell-Architektur (§6.3) und nur compile-, nicht visuell verifizierbar.
+- Später: KI real (Claude), BullMQ-Jobs, Meta/Google-Integrationen, Tests/Seeds/Audit/DSGVO.
+
+### 🔧 Nützliche Verifikations-Snippets (curl, Prod)
+```bash
+# Frontend-Proxy aktiv? (JSON = ja, HTML = nein)
+curl -s https://g-hub-frontend-production.up.railway.app/api/health
+# OAuth-Redirect zeigt auf Frontend-Domain?
+curl -sI https://g-hub-frontend-production.up.railway.app/api/auth/google/connect | grep -i location
+# Live-Asset-Hashes (mit lokalem Build vergleichen → Deploy live?)
+curl -s https://g-hub-frontend-production.up.railway.app/ | grep -oE '/assets/index-[A-Za-z0-9_-]+\.(css|js)'
+```
+
+---
+
+
 > Diese Datei ist die **Übergabe für die nächste Session**. Sie beschreibt den aktuellen
 > Stand, wie man lokal entwickelt/deployt, wichtige Stolpersteine und die konkreten
 > nächsten Aufgaben. Vollständige Spezifikation: `../G-Hub – Bauplan für Claude Code.md`.

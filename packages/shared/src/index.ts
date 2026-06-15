@@ -254,6 +254,52 @@ export interface PlanMonthDto {
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];
 
+// --- Zeiterfassung — Bauplan §4.11 ---
+// Zustand der Stempeluhr (out→in→break→in→out).
+export const TIME_STATUS = ['in', 'break', 'out'] as const;
+export type TimeStatus = (typeof TIME_STATUS)[number];
+
+export interface TimeEntryDto {
+  id: string;
+  date: string; // YYYY-MM-DD
+  clockIn: string;
+  clockOut: string | null;
+  workSeconds: number;
+  breakSeconds: number;
+  // Start des aktuellen Segments (für die Live-Berechnung im Frontend).
+  segmentStart: string | null;
+  status: TimeStatus;
+}
+
+export interface AbsenceBalanceDto {
+  year: number;
+  vacationTotal: number;
+  vacationUsed: number;
+  sickDays: number;
+  holidays: number;
+}
+
+export interface WorkSettingsDto {
+  weeklyTarget: number;
+  monthlyTarget: number;
+}
+
+export interface TimeDayDto {
+  date: string; // YYYY-MM-DD
+  label: string; // Mo, Di, …
+  seconds: number;
+}
+
+export interface TimeOverviewDto {
+  week: TimeDayDto[];
+  monthLabel: string;
+  monthSeconds: number;
+  targetSeconds: number;
+  balanceSeconds: number;
+  absence: AbsenceBalanceDto;
+  settings: WorkSettingsDto;
+}
+
 // --- Darstellung / Appearance — Bauplan §4.1 / §6.4 ---
 export const THEMES = ['light', 'gray', 'dark'] as const;
 export type ThemeName = (typeof THEMES)[number];

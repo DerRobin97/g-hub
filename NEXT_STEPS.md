@@ -4,12 +4,15 @@
 > Stand, wie man lokal entwickelt/deployt, wichtige Stolpersteine und die konkreten
 > nächsten Aufgaben. Vollständige Spezifikation: `../G-Hub – Bauplan für Claude Code.md`.
 
-_Stand: Phase 0 + Phase-1-Schritte 1–6 lokal fertig (committet, **noch zu pushen
-bzw. gepusht**). Phase 0 ist **live auf Railway**._
+_Stand: Phase 0 + Phase-1-Schritte 1–7 lokal fertig (committet, **noch zu pushen
+bzw. gepusht**). Zusätzlich: kompletter 1:1-Design-Rollout (Projekte-Hub, Analytics,
+Planer, News, Sheets, KI-Assistent, Ladescreen/Logo) design-first mit Mock-Daten.
+Phase 0 ist **live auf Railway**._
 
-> **Hier weitermachen (nächste Session):** Phase 1, **Schritt 7 — Zeiterfassung**
-> (`TimeEntry`/`AbsenceBalance`, Bauplan §4.11) als nächster Fachbereich, analog
-> zum Muster in §5. Siehe „Empfohlene Reihenfolge" (§6) — Schritte 1–6 sind erledigt.
+> **Hier weitermachen (nächste Session):** Phase 1, **Schritt 8 — Assets** (§4.7,
+> Upload zu S3-kompatiblem Bucket; Provider offen, §14) als nächster Fachbereich.
+> Siehe „Empfohlene Reihenfolge" (§6) — Schritte 1–7 sind erledigt. Danach die
+> design-first-Bereiche (Analytics/Planer/News) sukzessive an echte Backends binden.
 
 ---
 
@@ -29,7 +32,7 @@ bzw. gepusht**). Phase 0 ist **live auf Railway**._
 - **Deployment**: GitHub `DerRobin97/g-hub` → Railway Auto-Deploy
   - 4 Services: **backend**, **frontend**, **Postgres**, **Redis**
 
-### ✅ Fertig (Phase 1 — Schritte 1–6, lokal committet)
+### ✅ Fertig (Phase 1 — Schritte 1–7, lokal committet)
 
 - **Schritt 1 — App-Shell + Routing** (`b9aecd7`): React-Router, Desktop-Sidebar/Topbar
   (`app/AppShell.tsx`) + responsive Bottom-Nav, Layout-Varianten full/rail/dual,
@@ -60,16 +63,27 @@ bzw. gepusht**). Phase 0 ist **live auf Railway**._
   Frontend `features/annual-plan/`: Übersicht (Monats-Timeline, „Aus Vorlage befüllen") →
   Monats-Detail (Bereichs-Gruppen, Kanäle, Verzahnung) im 1:1-Prototyp-Design
   (`jahresplan.css`), Themen-CRUD via Modal, Routen `/projekte/jahresplan[/:month]`.
+- **Schritt 7 — Zeiterfassung** (§4.11): `TimeEntry`/`AbsenceBalance`/`WorkSettings`
+  (Enum `TimeStatus`), Migration `add_time_tracking`. `time-tracking`-Modul mit
+  Stempeluhr-State-Machine (`GET /time/today|month`, `POST /time/clock-in|clock-out|
+  break/start|break/end` — `JwtAuthGuard`, user-/workspace-gescopt). Frontend: API in
+  `lib/api.ts`, `WorkTimeSheet` an echtes Backend gebunden (Live-Timer aus Server-Segment).
+- **Design-Rollout (design-first, statische Daten):** Ladescreen `<gerber-hub-loader>` +
+  Logo, Projekte-Hub, Analytics, Social-Media-Planer (+ Unterseiten), News-Sektion, alle
+  Sheets (Erstellen/Compose/Suche/Mitteilungen/Team/Assets/Aufgaben/Zeit/Post), KI-Assistent
+  (Dock/FAB/Sheet), Shell-Verkabelung. CSS 1:1 (byte-identisch migriert); Mock-Daten in
+  `frontend/src/lib/mockData.ts`.
 
-> **Alle sechs Schritte sind durch Typecheck + Build + Lint gegangen; die CRUD-APIs
-> (Tasks, Projects, Campaigns, Plan) wurden lokal per curl verifiziert (inkl. Mandantentrennung,
-> Seed-Idempotenz + Kaskaden-Löschung).**
+> **Alle Schritte sind durch Typecheck + Build + Lint gegangen; die CRUD-/State-APIs
+> (Tasks, Projects, Campaigns, Plan, Time) wurden lokal per curl verifiziert (inkl.
+> Mandantentrennung, Seed-Idempotenz, Stempeluhr-Übergänge + Kaskaden-Löschung).**
 
 ### ⏳ Noch nicht gebaut
 
-- **Zeiterfassung** (§4.11) ← **als Nächstes**, dann Assets
+- **Assets** (§4.7) ← **als Nächstes** (S3-kompatibler Bucket, Provider offen §14)
+- Design-first-Bereiche an echte Backends binden: Analytics, Planer, News, Suche, Mitteilungen
 - Dashboard-KPIs/Fokus-Karte/Posts auf echte Aggregate umstellen (Kampagnen sind echt)
-- Planer (Social-Media), News, Suche, Mitteilungen, Analytics, KI
+- KI real (Claude-Anbindung statt canned replies)
 - BullMQ-Jobs (Redis ist bereitgestellt, aber noch nicht verdrahtet)
 - Tests, Seeds, Audit-Log, DSGVO
 
@@ -142,7 +156,7 @@ Prüfen: `curl http://localhost:3000/api/health` → `{"status":"ok","db":"up",.
      `backend/`). Daher im `backend/`-Ordner vorher laden, z. B.:
      `set -a && . ../.env && set +a && npx prisma migrate dev --name <name>`.
    - Bisherige Migrationen: `…_init_auth_workspace`, `…_add_tasks`, `…_add_projects`,
-     `…_add_campaigns`, `…_add_plan`.
+     `…_add_campaigns`, `…_add_plan`, `…_add_time_tracking`.
 6. **Google-Login** ist die einzige Anmeldeoption. In der Google Console müssen
    eingetragen sein:
    - Redirect-URI: `https://g-hub-production.up.railway.app/api/auth/google/callback`
@@ -184,9 +198,11 @@ Beispiel „Aufgaben" (Task) — gilt analog für Kampagnen, Projekte, Jahrespla
    Prisma-Modelle (mit `workspaceId`) + Migration `add_plan`, `plan`-Modul (CRUD, `JwtAuthGuard`,
    workspace-gescopt) inkl. idempotentem Seed `POST /plan/:year/seed`, shared-DTOs/Enums, `lib/api.ts`,
    Feature-UI unter `features/annual-plan/` (1:1-Prototyp-Design), Routen `/projekte/jahresplan[/:month]`.
-7. **← HIER WEITER: Zeiterfassung** (`TimeEntry`/`AbsenceBalance` — §4.11) — Stempeluhr-State-Machine.
-8. **Assets** (§4.7) — Upload zu S3-kompatiblem Bucket (Provider noch offen, §14).
-9. **Profil**, **Suche**, **Mitteilungen** auf echte Daten.
+7. ~~**Zeiterfassung** (`TimeEntry`/`AbsenceBalance`/`WorkSettings` — §4.11)~~ ✅ erledigt:
+   Migration `add_time_tracking`, `time-tracking`-Modul (Stempeluhr-State-Machine, `JwtAuthGuard`),
+   shared-DTOs, `lib/api.ts`, `WorkTimeSheet` an echtes Backend gebunden (Live-Timer).
+8. **← HIER WEITER: Assets** (§4.7) — Upload zu S3-kompatiblem Bucket (Provider noch offen, §14).
+9. **Profil**, **Suche**, **Mitteilungen** auf echte Daten; design-first-Bereiche (Analytics/Planer/News) verdrahten.
 
 Danach Phase 2 (Social-Planer + Meta), Phase 3 (Analytics + Google), Phase 4 (KI),
 Phase 5 (Härtung). Siehe Bauplan §12.

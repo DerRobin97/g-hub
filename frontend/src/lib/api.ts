@@ -24,6 +24,8 @@ import type {
   PlanLinkDto,
   PlanCategory,
   PlanLinkDirection,
+  TimeEntryDto,
+  TimeOverviewDto,
 } from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
@@ -426,4 +428,31 @@ export function updatePlanLink(id: string, patch: Partial<PlanLinkInput>): Promi
 
 export function deletePlanLink(id: string): Promise<{ status: string }> {
   return apiDelete<{ status: string }>(`/plan-links/${id}`);
+}
+
+// --- Zeiterfassung (Bauplan §4.11 / §5.1) ---
+export type { TimeEntryDto, TimeOverviewDto } from '@g-hub/shared';
+
+export function getTimeToday(): Promise<TimeEntryDto | null> {
+  return apiGet<TimeEntryDto | null>('/time/today');
+}
+
+export function getTimeMonth(): Promise<TimeOverviewDto> {
+  return apiGet<TimeOverviewDto>('/time/month');
+}
+
+export function timeClockIn(): Promise<TimeEntryDto> {
+  return apiPost<TimeEntryDto>('/time/clock-in');
+}
+
+export function timeClockOut(): Promise<TimeEntryDto> {
+  return apiPost<TimeEntryDto>('/time/clock-out');
+}
+
+export function timeBreakStart(): Promise<TimeEntryDto> {
+  return apiPost<TimeEntryDto>('/time/break/start');
+}
+
+export function timeBreakEnd(): Promise<TimeEntryDto> {
+  return apiPost<TimeEntryDto>('/time/break/end');
 }

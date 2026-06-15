@@ -1,9 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { TimeEntryDto, TimeOverviewDto } from '@g-hub/shared';
 import { Icon, type IconName } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
 import { Avatar, Bars, ChannelBadge, Ring } from '../../components/ui';
 import { useOverlay, type SheetProps } from '../../app/OverlayContext';
 import { NewsContent } from '../news/News';
+import {
+  getTimeMonth,
+  getTimeToday,
+  timeBreakEnd,
+  timeBreakStart,
+  timeClockIn,
+  timeClockOut,
+} from '../../lib/api';
 import {
   ASSETS,
   CHANNELS,
@@ -13,7 +22,6 @@ import {
   TASKS,
   TEAM,
   TEAM_BY_ID,
-  WORKTIME,
   type SimpleTask,
 } from '../../lib/mockData';
 
@@ -378,66 +386,74 @@ export function PostSheet({ data, close }: SheetProps): React.JSX.Element {
   );
 }
 
-// ── Zeiterfassung ────────────────────────────────────────────
-type WtState = 'out' | 'in' | 'break';
+// ── Zeiterfassung (echtes Backend, §4.11) ────────────────────
+const pad2 = (n: number): string => String(n).padStart(2, '0');
+const hmsFromSeconds = (sec: number): string => {
+  const s = Math.max(0, Math.floor(sec));
+  return pad2(Math.floor(s / 3600)) + ':' + pad2(Math.floor(s / 60) % 60) + ':' + pad2(s % 60);
+};
+const fmtH = (n: number): string => n.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
 export function WorkTimeSheet({ close }: SheetProps): React.JSX.Element {
-  const WT = WORKTIME;
-  const M = WT.month;
-  const A = WT.absence;
-  const fmt = (n: number): string => n.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  const hms = (ms: number): string => {
-    const s = Math.floor(ms / 1000);
-    return pad(Math.floor(s / 3600)) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60);
-  };
-
-  const [state, setState] = useState<WtState>('out');
+  const [entry, setEntry] = useState<TimeEntryDto | null>(null);
+  const [overview, setOverview] = useState<TimeOverviewDto | null>(null);
+  const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(Date.now());
-  const acc = useRef({ work: 0, brk: 0, t0: 0 });
-  const since = useRef<string | null>(null);
-  const raf = useRef(0);
+
+  const reload = useCallback(async (): Promise<void> => {
+    const [t, o] = await Promise.all([getTimeToday(), getTimeMonth()]);
+    setEntry(t);
+    setOverview(o);
+  }, []);
 
   useEffect(() => {
-    if (state === 'out') {
-      if (raf.current) cancelAnimationFrame(raf.current);
-      raf.current = 0;
-      return;
-    }
-    const loop = (): void => {
-      setNow(Date.now());
-      raf.current = requestAnimationFrame(loop);
-    };
-    raf.current = requestAnimationFrame(loop);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [state]);
+    void reload();
+  }, [reload]);
 
-  const liveWork = acc.current.work + (state === 'in' ? now - acc.current.t0 : 0);
-  const liveBreak = acc.current.brk + (state === 'break' ? now - acc.current.t0 : 0);
-  const nowStr = (): string => new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  const status = entry?.status ?? 'out';
 
-  const clockIn = (): void => { acc.current = { work: 0, brk: 0, t0: Date.now() }; since.current = nowStr(); setState('in'); setNow(Date.now()); };
-  const startBrk = (): void => { acc.current.work += Date.now() - acc.current.t0; acc.current.t0 = Date.now(); setState('break'); setNow(Date.now()); };
-  const endBrk = (): void => { acc.current.brk += Date.now() - acc.current.t0; acc.current.t0 = Date.now(); setState('in'); setNow(Date.now()); };
-  const clockOut = (): void => {
-    if (state === 'in') acc.current.work += Date.now() - acc.current.t0;
-    if (state === 'break') acc.current.brk += Date.now() - acc.current.t0;
-    setState('out');
-    setNow(Date.now());
+  // Live-Ticker, solange eine Stempelung läuft (in/break).
+  useEffect(() => {
+    if (status === 'out') return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [status]);
+
+  const segElapsed = (): number => {
+    if (!entry?.segmentStart) return 0;
+    return Math.max(0, Math.floor((now - Date.parse(entry.segmentStart)) / 1000));
+  };
+  const liveWork = (entry?.workSeconds ?? 0) + (status === 'in' ? segElapsed() : 0);
+  const liveBreak = (entry?.breakSeconds ?? 0) + (status === 'break' ? segElapsed() : 0);
+
+  const act = (fn: () => Promise<TimeEntryDto>): void => {
+    if (busy) return;
+    setBusy(true);
+    fn()
+      .then(() => reload())
+      .finally(() => setBusy(false));
   };
 
-  const stColor = state === 'in' ? 'var(--ok)' : state === 'break' ? 'var(--accent)' : 'var(--text-3)';
-  const stLabel = state === 'in' ? `Eingestempelt seit ${since.current}` : state === 'break' ? 'In Pause' : 'Ausgestempelt';
-  const weekSum = WT.week.reduce((s, d) => s + d.h, 0);
+  const sinceLabel = entry?.clockIn
+    ? new Date(entry.clockIn).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  const stColor = status === 'in' ? 'var(--ok)' : status === 'break' ? 'var(--accent)' : 'var(--text-3)';
+  const stLabel = status === 'in' ? `Eingestempelt seit ${sinceLabel}` : status === 'break' ? 'In Pause' : 'Ausgestempelt';
 
-  const absCards = [
-    { label: 'Urlaub übrig', value: A.urlaubLeft + ' T', tint: 'var(--ch-instagram)' },
-    { label: 'Urlaub genutzt', value: A.urlaubUsed + ' T', tint: 'var(--text-2)' },
-    { label: 'Krank', value: A.sick + ' T', tint: 'var(--bad)' },
-    { label: 'Feiertage', value: A.holidays + ' T', tint: 'var(--text-2)' },
-  ];
+  const monthH = (overview?.monthSeconds ?? 0) / 3600;
+  const targetH = (overview?.targetSeconds ?? 0) / 3600;
+  const balanceH = (overview?.balanceSeconds ?? 0) / 3600;
+  const weekSumH = (overview?.week.reduce((s, d) => s + d.seconds, 0) ?? 0) / 3600;
+  const weeklyTarget = overview?.settings.weeklyTarget ?? 40;
+  const A = overview?.absence;
+  const absCards = A
+    ? [
+        { label: 'Urlaub übrig', value: A.vacationTotal - A.vacationUsed + ' T', tint: 'var(--ch-instagram)' },
+        { label: 'Urlaub genutzt', value: A.vacationUsed + ' T', tint: 'var(--text-2)' },
+        { label: 'Krank', value: A.sickDays + ' T', tint: 'var(--bad)' },
+        { label: 'Feiertage', value: A.holidays + ' T', tint: 'var(--text-2)' },
+      ]
+    : [];
 
   return (
     <Sheet title="Arbeitszeit" onClose={close} full variant="sheet-worktime">
@@ -446,29 +462,29 @@ export function WorkTimeSheet({ close }: SheetProps): React.JSX.Element {
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: stColor, transition: 'background .2s' }} />{stLabel}
         </div>
         <div className="tabular" style={{ fontFamily: 'var(--ff-disp)', fontWeight: 700, fontSize: 48, letterSpacing: '-0.02em', margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
-          {state === 'out' ? '00:00:00' : hms(liveWork)}
+          {status === 'out' ? '00:00:00' : hmsFromSeconds(liveWork)}
         </div>
         <div className="dim" style={{ fontFamily: 'var(--ff-mono)', fontSize: 12.5, minHeight: 18 }}>
-          {state === 'out' ? 'Bereit zum Einstempeln' : `Pause heute · ${hms(liveBreak)}`}
+          {status === 'out' ? 'Bereit zum Einstempeln' : `Pause heute · ${hmsFromSeconds(liveBreak)}`}
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-          {state === 'out' && <button className="btn btn-primary btn-block" onClick={clockIn}><Icon name="play" size={18} /> Einstempeln</button>}
-          {state === 'in' && (
+          {status === 'out' && <button className="btn btn-primary btn-block" disabled={busy} onClick={() => act(timeClockIn)}><Icon name="play" size={18} /> Einstempeln</button>}
+          {status === 'in' && (
             <>
-              <button className="btn btn-ghost" style={{ flex: 1 }} onClick={startBrk}><Icon name="coffee" size={17} /> Pause</button>
-              <button className="btn btn-primary" style={{ flex: 1, background: 'var(--bad)', color: '#fff' }} onClick={clockOut}><Icon name="stop" size={16} /> Ausstempeln</button>
+              <button className="btn btn-ghost" style={{ flex: 1 }} disabled={busy} onClick={() => act(timeBreakStart)}><Icon name="coffee" size={17} /> Pause</button>
+              <button className="btn btn-primary" style={{ flex: 1, background: 'var(--bad)', color: '#fff' }} disabled={busy} onClick={() => act(timeClockOut)}><Icon name="stop" size={16} /> Ausstempeln</button>
             </>
           )}
-          {state === 'break' && <button className="btn btn-primary btn-block" onClick={endBrk}><Icon name="play" size={18} /> Pause beenden</button>}
+          {status === 'break' && <button className="btn btn-primary btn-block" disabled={busy} onClick={() => act(timeBreakEnd)}><Icon name="play" size={18} /> Pause beenden</button>}
         </div>
       </div>
 
       <div className="card" style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <Ring pct={Math.min(M.done / M.target, 1)} size={84} sw={9}><span style={{ fontSize: 15 }}>{Math.round((M.done / M.target) * 100)}%</span></Ring>
+        <Ring pct={targetH ? Math.min(monthH / targetH, 1) : 0} size={84} sw={9}><span style={{ fontSize: 15 }}>{targetH ? Math.round((monthH / targetH) * 100) : 0}%</span></Ring>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="tag" style={{ marginBottom: 4 }}>{M.label}</div>
-          <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 19 }}>{fmt(M.done)} <span style={{ fontSize: 13, color: 'var(--text-3)' }}>/ {M.target} Std</span></div>
-          <div className="dim" style={{ fontSize: 12.5, marginTop: 4 }}>Saldo <span style={{ color: M.balance >= 0 ? 'var(--ok)' : 'var(--bad)', fontWeight: 600 }}>{M.balance >= 0 ? '+' : ''}{fmt(M.balance)} Std</span> · Woche {fmt(weekSum)} Std</div>
+          <div className="tag" style={{ marginBottom: 4 }}>{overview?.monthLabel ?? '—'}</div>
+          <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 19 }}>{fmtH(monthH)} <span style={{ fontSize: 13, color: 'var(--text-3)' }}>/ {Math.round(targetH)} Std</span></div>
+          <div className="dim" style={{ fontSize: 12.5, marginTop: 4 }}>Saldo <span style={{ color: balanceH >= 0 ? 'var(--ok)' : 'var(--bad)', fontWeight: 600 }}>{balanceH >= 0 ? '+' : ''}{fmtH(balanceH)} Std</span> · Woche {fmtH(weekSumH)} Std</div>
         </div>
       </div>
 
@@ -484,19 +500,22 @@ export function WorkTimeSheet({ close }: SheetProps): React.JSX.Element {
       <div className="card" style={{ marginTop: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div className="sec-title" style={{ fontSize: 15 }}>Diese Woche</div>
-          <span className="dim" style={{ fontSize: 12.5 }}>Ziel {WT.target / 5} Std/Tag</span>
+          <span className="dim" style={{ fontSize: 12.5 }}>Ziel {Math.round(weeklyTarget / 5)} Std/Tag</span>
         </div>
-        <Bars data={WT.week.map((d) => d.h)} labels={WT.week.map((d) => d.d)} h={120} />
+        <Bars data={(overview?.week ?? []).map((d) => d.seconds / 3600)} labels={(overview?.week ?? []).map((d) => d.label)} h={120} />
       </div>
 
       <div className="card" style={{ marginTop: 12, padding: '4px 16px' }}>
-        {WT.week.map((d, i) => (
-          <div key={i} className="row">
-            <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 14, width: 34 }}>{d.d}</div>
-            <div className="bar" style={{ flex: 1 }}><span style={{ width: `${Math.min((d.h / 8) * 100, 100)}%` }} /></div>
-            <span className="tabular" style={{ fontFamily: 'var(--ff-mono)', fontSize: 12.5, color: 'var(--text-2)', width: 56, textAlign: 'right' }}>{fmt(d.h)} Std</span>
-          </div>
-        ))}
+        {(overview?.week ?? []).map((d) => {
+          const h = d.seconds / 3600;
+          return (
+            <div key={d.date} className="row">
+              <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 14, width: 34 }}>{d.label}</div>
+              <div className="bar" style={{ flex: 1 }}><span style={{ width: `${Math.min((h / 8) * 100, 100)}%` }} /></div>
+              <span className="tabular" style={{ fontFamily: 'var(--ff-mono)', fontSize: 12.5, color: 'var(--text-2)', width: 56, textAlign: 'right' }}>{fmtH(h)} Std</span>
+            </div>
+          );
+        })}
       </div>
     </Sheet>
   );

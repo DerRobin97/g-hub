@@ -326,6 +326,20 @@ export interface UploadUrlDto {
   uploadUrl: string;
 }
 
+// --- Globale Suche — Bauplan §5.1 / §7 (Punkt 12) ---
+export interface SearchHitDto {
+  id: string;
+  title: string;
+  sub: string;
+}
+
+export interface SearchResultsDto {
+  campaigns: SearchHitDto[];
+  projects: SearchHitDto[];
+  tasks: SearchHitDto[];
+  assets: SearchHitDto[];
+}
+
 // --- Darstellung / Appearance — Bauplan §4.1 / §6.4 ---
 export const THEMES = ['light', 'gray', 'dark'] as const;
 export type ThemeName = (typeof THEMES)[number];

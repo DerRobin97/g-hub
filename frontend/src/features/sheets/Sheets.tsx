@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { TimeEntryDto, TimeOverviewDto, AssetDto } from '@g-hub/shared';
+import { useNavigate } from 'react-router-dom';
+import type { TimeEntryDto, TimeOverviewDto, AssetDto, SearchResultsDto } from '@g-hub/shared';
 import { Icon, type IconName } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
 import { Avatar, Bars, ChannelBadge, Ring } from '../../components/ui';
@@ -14,13 +15,12 @@ import {
   timeClockOut,
   getAssets,
   uploadAsset,
+  searchAll,
 } from '../../lib/api';
 import {
   ASSETS,
   CHANNELS,
-  CONTENT,
   INBOX,
-  NEWS,
   TASKS,
   TEAM,
   TEAM_BY_ID,
@@ -209,27 +209,51 @@ interface SearchHit {
 
 export function SearchSheet({ close }: SheetProps): React.JSX.Element {
   const { open } = useOverlay();
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
+  const [results, setResults] = useState<SearchResultsDto | null>(null);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 360);
     return () => clearTimeout(t);
   }, []);
-  const ql = q.trim().toLowerCase();
-  const m = (s: string): boolean => (s || '').toLowerCase().includes(ql);
 
-  const posts: Array<{ ch: string; t: string; time: string; day: number }> = [];
-  Object.keys(CONTENT).forEach((d) => CONTENT[+d].forEach((p) => posts.push({ ...p, day: +d })));
+  const ql = q.trim();
+  // Echte Suche gegen /api/search (debounced 250 ms), ab 2 Zeichen.
+  useEffect(() => {
+    if (ql.length < 2) {
+      setResults(null);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(() => {
+      searchAll(ql)
+        .then((r) => !cancelled && setResults(r))
+        .catch(() => !cancelled && setResults(null))
+        .finally(() => !cancelled && setLoading(false));
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [ql]);
 
-  const groups: Array<[string, SearchHit[]]> = !ql
+  const goTo = (path: string): void => {
+    close();
+    navigate(path);
+  };
+
+  const groups: Array<[string, SearchHit[]]> = !results
     ? []
     : (
         [
-          ['Beiträge', posts.filter((p) => m(p.t)).map((p, i) => ({ k: 'p' + i, ch: p.ch, title: p.t, sub: `${p.day}. Juni · ${p.time} Uhr`, go: () => open('post', p) }))],
-          ['Aufgaben', TASKS.filter((t) => m(t.t)).map((t) => ({ k: t.id, icon: 'check' as IconName, title: t.t, sub: t.tag + ' · ' + t.due, go: () => open('tasks') }))],
-          ['Assets', ASSETS.filter((a) => m(a.tag)).map((a) => ({ k: a.id, icon: 'layers' as IconName, title: a.tag, sub: a.kind, go: () => open('assets') }))],
-          ['Team', TEAM.filter((x) => m(x.name)).map((x) => ({ k: x.id, avatar: x.id, title: x.name, sub: x.role, go: () => open('team') }))],
-          ['News', [NEWS.highlight, ...NEWS.items].filter((n) => m(n.title)).map((n, i) => ({ k: 'n' + i, icon: 'news' as IconName, title: n.title, sub: n.cat + ' · ' + n.src, go: () => open('alerts', { tab: 'news' }) }))],
+          ['Kampagnen', results.campaigns.map((h) => ({ k: h.id, icon: 'campaign' as IconName, title: h.title, sub: h.sub, go: () => goTo(`/projekte/kampagnen/${h.id}`) }))],
+          ['Projekte', results.projects.map((h) => ({ k: h.id, icon: 'layers' as IconName, title: h.title, sub: h.sub, go: () => goTo(`/projekte/projektmanager/${h.id}`) }))],
+          ['Aufgaben', results.tasks.map((h) => ({ k: h.id, icon: 'check' as IconName, title: h.title, sub: h.sub, go: () => goTo('/profil/aufgaben') }))],
+          ['Assets', results.assets.map((h) => ({ k: h.id, icon: 'image' as IconName, title: h.title, sub: h.sub, go: () => open('assets') }))],
         ] as Array<[string, SearchHit[]]>
       ).filter((g) => g[1].length);
   const total = groups.reduce((s, g) => s + g[1].length, 0);
@@ -238,18 +262,19 @@ export function SearchSheet({ close }: SheetProps): React.JSX.Element {
     <Sheet title="Suche" onClose={close} variant="sheet-search">
       <div className="field" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
         <Icon name="search" size={18} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
-        <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Beiträge, Aufgaben, Assets, Team, News…" style={{ flex: 1, minWidth: 0, background: 'none', border: 0, outline: 'none', color: 'var(--text)', fontFamily: 'var(--ff)', fontSize: 15 }} />
+        <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Kampagnen, Projekte, Aufgaben, Assets…" style={{ flex: 1, minWidth: 0, background: 'none', border: 0, outline: 'none', color: 'var(--text)', fontFamily: 'var(--ff)', fontSize: 15 }} />
         {q && (
           <button onClick={() => setQ('')} aria-label="Leeren" style={{ flexShrink: 0, width: 24, height: 24, borderRadius: '50%', border: 0, cursor: 'pointer', background: 'var(--surface-3)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="close" size={12} /></button>
         )}
       </div>
 
-      {!ql && (
+      {ql.length < 2 && (
         <div className="dim" style={{ fontSize: 13, textAlign: 'center', padding: '34px 24px', lineHeight: 1.55 }}>
-          Durchsuche die ganze App — geplante Beiträge, Aufgaben, Assets, Team und News.
+          Durchsuche die ganze App — Kampagnen, Projekte, Aufgaben und Assets.
         </div>
       )}
-      {ql && total === 0 && <div className="empty" style={{ padding: '34px 0' }}>Keine Treffer für „{q}".</div>}
+      {ql.length >= 2 && loading && <div className="dim" style={{ textAlign: 'center', padding: '34px 0', fontSize: 13 }}>Suche läuft …</div>}
+      {ql.length >= 2 && !loading && total === 0 && <div className="empty" style={{ padding: '34px 0' }}>Keine Treffer für „{q}".</div>}
 
       {groups.map(([label, items]) => (
         <div key={label} style={{ marginTop: 14 }}>

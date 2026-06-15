@@ -10,6 +10,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { PlanModule } from './plan/plan.module';
 import { TimeTrackingModule } from './time-tracking/time-tracking.module';
 import { AssetsModule } from './assets/assets.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AssetsModule } from './assets/assets.module';
     PlanModule,
     TimeTrackingModule,
     AssetsModule,
+    SearchModule,
   ],
 })
 export class AppModule {}

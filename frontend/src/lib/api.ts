@@ -29,6 +29,7 @@ import type {
   AssetDto,
   AssetKind,
   UploadUrlDto,
+  SearchResultsDto,
 } from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
@@ -533,4 +534,11 @@ export async function uploadAsset(file: File, channel?: string | null): Promise<
     storageKey,
     channel: channel ?? null,
   });
+}
+
+// --- Globale Suche (Bauplan §5.1 / §7) ---
+export type { SearchHitDto, SearchResultsDto } from '@g-hub/shared';
+
+export function searchAll(q: string): Promise<SearchResultsDto> {
+  return apiGet<SearchResultsDto>(`/search?q=${encodeURIComponent(q)}`);
 }

@@ -10,6 +10,29 @@ Die echten Werte (App-Secret, Tokens) kommen **nur** in `.env` bzw. Railway-Vari
 
 ---
 
+## ✅ Bereits vorbereitet (Stand 2026-06-15)
+
+Folgendes hat Robin in der Meta-Console schon eingerichtet — die nächste Session muss
+das **nicht** erneut machen:
+
+- [x] **Meta-App angelegt** (Typ Business)
+- [x] **Use Cases gewählt:** „Alles auf deiner Seite verwalten" (Pages API, Facebook)
+      **und** „Messaging und Content auf Instagram verwalten" (Instagram Content/Insights)
+- [x] **OAuth-Redirect-URIs** eingetragen (beide):
+      `http://localhost:3000/api/integrations/meta/callback` +
+      `https://g-hub-production.up.railway.app/api/integrations/meta/callback`
+
+**Noch offen / zu prüfen:**
+
+- [ ] **App-ID + App-Secret** in `g-hub/.env` (`META_APP_ID`, `META_APP_SECRET`) — und später in Railway
+- [ ] **Instagram-Konto** auf **Business/Creator** + mit der **Facebook-Seite verknüpft** (Voraussetzung §0)
+- [ ] **App Review** für Advanced Access (erst für echten Produktivbetrieb nötig, §7)
+
+> Der eigentliche **Connect-/Posting-Code** wird in **Phase 2** gebaut (Modul `integrations`,
+> BullMQ-Jobs). Bis dahin ist Meta „geparkt" — Vorbereitung steht.
+
+---
+
 ## 0. Wichtige Voraussetzungen (zuerst klären!)
 
 Meta-Posting funktioniert **nur** mit dieser Kette:

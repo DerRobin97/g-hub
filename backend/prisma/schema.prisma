@@ -44,6 +44,7 @@ model Workspace {
   memberships Membership[]
   tasks       Task[]
   projects    Project[]
+  campaigns   Campaign[]
 
   @@map("workspaces")
 }
@@ -69,6 +70,7 @@ model User {
   projectsCreated Project[]      @relation("ProjectCreatedBy")
   projectMemberships     ProjectMember[]
   projectTaskMemberships ProjectTaskMember[]
+  campaignsCreated       Campaign[]         @relation("CampaignCreatedBy")
 
   @@map("users")
 }
@@ -275,4 +277,106 @@ model ProjectTaskMember {
   @@id([taskId, userId])
   @@index([userId])
   @@map("project_task_members")
+}
+
+// ─────────────────────────────────────────────────────────────
+// §4.4 Kampagnen — Kampagne → Maßnahmen → Rabattaktionen.
+// ─────────────────────────────────────────────────────────────
+
+// Status für Kampagnen und Maßnahmen (deckt sich mit StatusTag im Frontend).
+enum CampaignStatus {
+  live
+  review
+  draft
+}
+
+// Maßnahmen-Art (Prototyp-Labels: Organisch|Promotion|Paid|Code).
+enum MeasureType {
+  organisch
+  promotion
+  paid
+  code
+}
+
+// Rabatt-Art (Prototyp-Labels: Prozent|2 für 1|Versand|Code).
+enum DiscountType {
+  prozent
+  zwei_fuer_eins
+  versand
+  code
+}
+
+model Campaign {
+  id          String         @id @default(uuid())
+  workspaceId String         @map("workspace_id")
+  name        String
+  status      CampaignStatus @default(draft)
+  // Kanal-Schlüssel (instagram, facebook, …) — wie CHANNELS in @g-hub/shared.
+  channels    String[]
+  budget      Int            @default(0)
+  spent       Int            @default(0)
+  reach       Int            @default(0)
+  kpiText     String?        @map("kpi_text")
+  startDate   DateTime?      @map("start_date")
+  endDate     DateTime?      @map("end_date")
+  // Anzeige-Label des Zeitraums (z. B. „01.–30. Jun"), analog dueLabel.
+  zeitraum    String?
+  // Anzeige-Label der Fälligkeit (Prototyp `due`, z. B. „12. Jun").
+  dueLabel    String?        @map("due_label")
+  // Akzentfarbe der Kampagne (z. B. „var(--ch-instagram)").
+  color       String?
+  createdById String         @map("created_by_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("CampaignCreatedBy", fields: [createdById], references: [id])
+  measures  Measure[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@map("campaigns")
+}
+
+model Measure {
+  id         String         @id @default(uuid())
+  campaignId String         @map("campaign_id")
+  name       String
+  type       MeasureType    @default(organisch)
+  status     CampaignStatus @default(draft)
+  // Fortschritt 0..1.
+  progress   Float          @default(0)
+  postsCount Int            @default(0) @map("posts_count")
+  order      Int            @default(0)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+
+  campaign  Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  discounts Discount[]
+
+  @@index([campaignId])
+  @@map("measures")
+}
+
+model Discount {
+  id        String       @id @default(uuid())
+  measureId String       @map("measure_id")
+  name      String
+  type      DiscountType @default(prozent)
+  // Anzeige-Wert (z. B. „−20 %", „2:1", „0 €").
+  value     String?
+  code      String?
+  startDate DateTime?    @map("start_date")
+  endDate   DateTime?    @map("end_date")
+  zeitraum  String?
+  redeemed  Int          @default(0)
+  limit     Int          @default(0)
+  order     Int          @default(0)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  measure Measure @relation(fields: [measureId], references: [id], onDelete: Cascade)
+
+  @@index([measureId])
+  @@map("discounts")
 }

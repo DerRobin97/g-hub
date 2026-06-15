@@ -4,12 +4,12 @@
 > Stand, wie man lokal entwickelt/deployt, wichtige Stolpersteine und die konkreten
 > nächsten Aufgaben. Vollständige Spezifikation: `../G-Hub – Bauplan für Claude Code.md`.
 
-_Stand: Phase 0 + Phase-1-Schritte 1–4 lokal fertig (committet, **noch zu pushen
+_Stand: Phase 0 + Phase-1-Schritte 1–5 lokal fertig (committet, **noch zu pushen
 bzw. gepusht**). Phase 0 ist **live auf Railway**._
 
-> **Hier weitermachen (nächste Session):** Phase 1, **Schritt 5 — Kampagnen**
-> (`Campaign`/`Measure`/`Discount`, Bauplan §4.4) als nächster Fachbereich, analog
-> zum Muster in §5. Siehe „Empfohlene Reihenfolge" (§6) — Schritte 1–4 sind erledigt.
+> **Hier weitermachen (nächste Session):** Phase 1, **Schritt 6 — Jahresplan**
+> (`PlanMonth`/`PlanTheme`/`PlanLink`, Bauplan §4.8) als nächster Fachbereich, analog
+> zum Muster in §5. Siehe „Empfohlene Reihenfolge" (§6) — Schritte 1–5 sind erledigt.
 
 ---
 
@@ -29,7 +29,7 @@ bzw. gepusht**). Phase 0 ist **live auf Railway**._
 - **Deployment**: GitHub `DerRobin97/g-hub` → Railway Auto-Deploy
   - 4 Services: **backend**, **frontend**, **Postgres**, **Redis**
 
-### ✅ Fertig (Phase 1 — Schritte 1–4, lokal committet)
+### ✅ Fertig (Phase 1 — Schritte 1–5, lokal committet)
 
 - **Schritt 1 — App-Shell + Routing** (`b9aecd7`): React-Router, Desktop-Sidebar/Topbar
   (`app/AppShell.tsx`) + responsive Bottom-Nav, Layout-Varianten full/rail/dual,
@@ -45,14 +45,22 @@ bzw. gepusht**). Phase 0 ist **live auf Railway**._
   `projects`-Modul (Projekt-/Phasen-/Task-CRUD + `GET /api/projects/members`),
   Übersicht + Projekt-Detail (Gruppierung, Abhaken, Phase/Aufgabe anlegen) +
   Task-Detail-Modal (`features/projects/`), Routen `/projekte/projektmanager[/:projectId]`.
+- **Schritt 5 — Kampagnen** (§4.4): `Campaign`/`Measure`/`Discount` (mit `workspaceId`),
+  Enums `CampaignStatus`/`MeasureType`/`DiscountType`, Migration `add_campaigns`.
+  `campaigns`-Modul (Kampagnen-CRUD + `…/measures`, `measures/:id` + `…/discounts`,
+  `discounts/:id` — alles `JwtAuthGuard` + workspace-gescopt). Frontend `features/campaigns/`:
+  Übersicht (Liste/Baum + Budget-Ring) → Maßnahmen-Detail → Rabatt-Detail, Create-Modals,
+  Routen `/projekte/kampagnen[/:campaignId[/massnahme/:measureId]]`. Dashboard-„Aktive
+  Kampagnen" + Shortcut auf echte Daten umgestellt.
 
-> **Alle vier Schritte sind durch Typecheck + Build + Lint gegangen; die CRUD-APIs
-> (Tasks, Projects) wurden lokal per curl verifiziert.**
+> **Alle fünf Schritte sind durch Typecheck + Build + Lint gegangen; die CRUD-APIs
+> (Tasks, Projects, Campaigns) wurden lokal per curl verifiziert (inkl. Mandantentrennung
+> + Kaskaden-Löschung).**
 
 ### ⏳ Noch nicht gebaut
 
-- **Kampagnen** (§4.4) ← **als Nächstes**, dann Jahresplan, Zeiterfassung, Assets
-- Dashboard auf echte Aggregate umstellen (aktuell Platzhalter)
+- **Jahresplan** (§4.8) ← **als Nächstes**, dann Zeiterfassung, Assets
+- Dashboard-KPIs/Fokus-Karte/Posts auf echte Aggregate umstellen (Kampagnen sind echt)
 - Planer (Social-Media), News, Suche, Mitteilungen, Analytics, KI
 - BullMQ-Jobs (Redis ist bereitgestellt, aber noch nicht verdrahtet)
 - Tests, Seeds, Audit-Log, DSGVO
@@ -125,7 +133,8 @@ Prüfen: `curl http://localhost:3000/api/health` → `{"status":"ok","db":"up",.
    - Prisma findet `DATABASE_URL` nicht automatisch (sie liegt in `g-hub/.env`, nicht in
      `backend/`). Daher im `backend/`-Ordner vorher laden, z. B.:
      `set -a && . ../.env && set +a && npx prisma migrate dev --name <name>`.
-   - Bisherige Migrationen: `…_init_auth_workspace`, `…_add_tasks`, `…_add_projects`.
+   - Bisherige Migrationen: `…_init_auth_workspace`, `…_add_tasks`, `…_add_projects`,
+     `…_add_campaigns`.
 6. **Google-Login** ist die einzige Anmeldeoption. In der Google Console müssen
    eingetragen sein:
    - Redirect-URI: `https://g-hub-production.up.railway.app/api/auth/google/callback`
@@ -159,12 +168,11 @@ Beispiel „Aufgaben" (Task) — gilt analog für Kampagnen, Projekte, Jahrespla
 2. ~~**Dashboard-Grundgerüst** (`dashboard.jsx`)~~ ✅ erledigt (`dac145c`) — noch Platzhalter-Daten.
 3. ~~**Aufgaben** (`Task`, §4.6)~~ ✅ erledigt (`7b182e2`).
 4. ~~**Projektmanager** (`Project`/`Phase`/`ProjectTask` — §4.5)~~ ✅ erledigt (`b6a30bf`).
-5. **← HIER WEITER: Kampagnen** (`Campaign`/`Measure`/`Discount` — §4.4) inkl. `kampagnen.jsx`.
-   Muster wie bei Aufgaben/Projektmanager: Prisma-Modelle (mit `workspaceId`) + Migration,
-   `campaigns`-Modul (CRUD, `JwtAuthGuard`, workspace-gescopt), shared-DTOs, `lib/api.ts`,
-   Feature-UI unter `features/campaigns/`, Route unter `/projekte/kampagnen`. Danach das
-   Dashboard-„Aktive Kampagnen" und den Dashboard-Shortcut auf echte Daten umstellen.
-6. **Jahresplan** (`PlanMonth`/`PlanTheme`/`PlanLink` — §4.8) + **Seed** aus `JP_MONTHS`.
+5. ~~**Kampagnen** (`Campaign`/`Measure`/`Discount` — §4.4)~~ ✅ erledigt: Prisma-Modelle
+   (mit `workspaceId`) + Migration `add_campaigns`, `campaigns`-Modul (CRUD, `JwtAuthGuard`,
+   workspace-gescopt), shared-DTOs/Enums, `lib/api.ts`, Feature-UI unter `features/campaigns/`,
+   Routen unter `/projekte/kampagnen`. Dashboard-„Aktive Kampagnen" + Shortcut auf echte Daten.
+6. **← HIER WEITER: Jahresplan** (`PlanMonth`/`PlanTheme`/`PlanLink` — §4.8) + **Seed** aus `JP_MONTHS`.
 7. **Zeiterfassung** (`TimeEntry`/`AbsenceBalance` — §4.11) — Stempeluhr-State-Machine.
 8. **Assets** (§4.7) — Upload zu S3-kompatiblem Bucket (Provider noch offen, §14).
 9. **Profil**, **Suche**, **Mitteilungen** auf echte Daten.

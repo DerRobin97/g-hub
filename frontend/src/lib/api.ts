@@ -12,6 +12,13 @@ import type {
   ProjectTaskDto,
   ProjectTaskPriority,
   ProjectMemberDto,
+  CampaignSummaryDto,
+  CampaignDetailDto,
+  CampaignStatus,
+  MeasureDto,
+  MeasureType,
+  DiscountDto,
+  DiscountType,
 } from '@g-hub/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
@@ -279,4 +286,87 @@ export function updateProjectTask(
 
 export function deleteProjectTask(id: string): Promise<{ status: string }> {
   return apiDelete<{ status: string }>(`/project-tasks/${id}`);
+}
+
+// --- Kampagnen (Bauplan §4.4 / §5.1) ---
+export type {
+  CampaignSummaryDto,
+  CampaignDetailDto,
+  MeasureDto,
+  DiscountDto,
+} from '@g-hub/shared';
+
+export interface CampaignInput {
+  name: string;
+  status?: CampaignStatus;
+  channels?: string[];
+  budget?: number;
+  spent?: number;
+  reach?: number;
+  kpiText?: string | null;
+  zeitraum?: string | null;
+  dueLabel?: string | null;
+  color?: string | null;
+}
+
+export interface MeasureInput {
+  name: string;
+  type?: MeasureType;
+  status?: CampaignStatus;
+  progress?: number;
+  postsCount?: number;
+}
+
+export interface DiscountInput {
+  name: string;
+  type?: DiscountType;
+  value?: string | null;
+  code?: string | null;
+  zeitraum?: string | null;
+  redeemed?: number;
+  limit?: number;
+}
+
+export function listCampaigns(): Promise<CampaignSummaryDto[]> {
+  return apiGet<CampaignSummaryDto[]>('/campaigns');
+}
+
+export function getCampaign(id: string): Promise<CampaignDetailDto> {
+  return apiGet<CampaignDetailDto>(`/campaigns/${id}`);
+}
+
+export function createCampaign(input: CampaignInput): Promise<CampaignDetailDto> {
+  return apiPost<CampaignDetailDto>('/campaigns', input);
+}
+
+export function updateCampaign(id: string, patch: Partial<CampaignInput>): Promise<CampaignDetailDto> {
+  return apiPatch<CampaignDetailDto>(`/campaigns/${id}`, patch);
+}
+
+export function deleteCampaign(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/campaigns/${id}`);
+}
+
+export function createMeasure(campaignId: string, input: MeasureInput): Promise<CampaignDetailDto> {
+  return apiPost<CampaignDetailDto>(`/campaigns/${campaignId}/measures`, input);
+}
+
+export function updateMeasure(id: string, patch: Partial<MeasureInput>): Promise<MeasureDto> {
+  return apiPatch<MeasureDto>(`/measures/${id}`, patch);
+}
+
+export function deleteMeasure(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/measures/${id}`);
+}
+
+export function createDiscount(measureId: string, input: DiscountInput): Promise<MeasureDto> {
+  return apiPost<MeasureDto>(`/measures/${measureId}/discounts`, input);
+}
+
+export function updateDiscount(id: string, patch: Partial<DiscountInput>): Promise<DiscountDto> {
+  return apiPatch<DiscountDto>(`/discounts/${id}`, patch);
+}
+
+export function deleteDiscount(id: string): Promise<{ status: string }> {
+  return apiDelete<{ status: string }>(`/discounts/${id}`);
 }

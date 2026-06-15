@@ -9,6 +9,9 @@ import { ProfilPage } from './pages/ProfilPage';
 import { AufgabenPage } from './features/tasks/AufgabenPage';
 import { ProjektmanagerPage } from './features/projects/ProjektmanagerPage';
 import { ProjectDetailPage } from './features/projects/ProjectDetailPage';
+import { KampagnenPage } from './features/campaigns/KampagnenPage';
+import { CampaignDetailPage } from './features/campaigns/CampaignDetailPage';
+import { MeasureDetailPage } from './features/campaigns/MeasureDetailPage';
 
 /**
  * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
@@ -35,6 +38,9 @@ export function App(): React.JSX.Element {
         <Route path="projekte" element={<ProjektePage />} />
         <Route path="projekte/projektmanager" element={<ProjektmanagerPage />} />
         <Route path="projekte/projektmanager/:projectId" element={<ProjectDetailPage />} />
+        <Route path="projekte/kampagnen" element={<KampagnenPage />} />
+        <Route path="projekte/kampagnen/:campaignId" element={<CampaignDetailPage />} />
+        <Route path="projekte/kampagnen/:campaignId/massnahme/:measureId" element={<MeasureDetailPage />} />
         <Route path="projekte/:area" element={<ProjektePage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="profil" element={<ProfilPage />} />

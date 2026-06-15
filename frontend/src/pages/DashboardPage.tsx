@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { APP_VERSION } from '@g-hub/shared';
-import { getHealth, type HealthResponse } from '../lib/api';
+import { APP_VERSION, type CampaignSummaryDto } from '@g-hub/shared';
+import { getHealth, listCampaigns, type HealthResponse } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import { Delta, Ring, SectionHead, Spark, StatusTag, type StatusKey } from '../components/ui';
+import { campaignColor, ratio } from '../features/campaigns/campaignUtils';
 
 /**
  * Dashboard-Grundgerüst (Bauplan §… / NEXT_STEPS Schritt 2).
@@ -34,11 +35,6 @@ const CHANNEL_MIX: Array<{ name: string; val: number; color: string }> = [
   { name: 'LinkedIn', val: 22, color: '#0a66c2' },
 ];
 
-const CAMPAIGNS: Array<{ name: string; progress: number; kpi: string; color: string }> = [
-  { name: 'Frühjahrs-Aktion Garten', progress: 0.72, kpi: '+18% Reichweite', color: '#cdf24d' },
-  { name: 'Grill-Saison Eröffnung', progress: 0.41, kpi: '312 Klicks', color: '#ee7203' },
-];
-
 const UPCOMING: Array<{ ch: string; short: string; color: string; t: string; when: string; status: StatusKey }> = [
   { ch: 'instagram', short: 'IG', color: '#e1306c', t: 'Reel: Neue Akku-Geräte', when: '17. Jun · 10:00 Uhr', status: 'sched' },
   { ch: 'facebook', short: 'FB', color: '#1877f2', t: 'Post: Pflanzen-Tipps Juni', when: '18. Jun · 14:30 Uhr', status: 'draft' },
@@ -49,13 +45,22 @@ export function DashboardPage(): React.JSX.Element {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [campaigns, setCampaigns] = useState<CampaignSummaryDto[]>([]);
   const workspace = user?.memberships[0];
 
   useEffect(() => {
     getHealth()
       .then(setHealth)
       .catch(() => setHealth(null));
+    listCampaigns()
+      .then(setCampaigns)
+      .catch(() => setCampaigns([]));
   }, []);
+
+  // „Aktive Kampagnen": laufende zuerst, sonst die neuesten — auf 3 begrenzt.
+  const activeCampaigns = [...campaigns]
+    .sort((a, b) => Number(b.status === 'live') - Number(a.status === 'live'))
+    .slice(0, 3);
 
   return (
     <div className="screen stack">
@@ -117,32 +122,44 @@ export function DashboardPage(): React.JSX.Element {
       <div>
         <SectionHead title="Aktive Kampagnen" link="Alle" onLink={() => navigate('/projekte/kampagnen')} />
         <div className="stack" style={{ marginTop: 10 }}>
-          {CAMPAIGNS.map((c) => (
-            <div
-              key={c.name}
-              className="card tap"
-              onClick={() => navigate('/projekte/kampagnen')}
-              style={{ display: 'flex', alignItems: 'center', gap: 14 }}
-            >
-              <Ring pct={c.progress} size={48} sw={6} color={c.color}>
-                <span style={{ fontSize: 12 }}>{Math.round(c.progress * 100)}</span>
-              </Ring>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="row-t" style={{ fontSize: 15 }}>
-                  {c.name}
+          {activeCampaigns.map((c) => {
+            const pct = ratio(c.spent, c.budget);
+            return (
+              <div
+                key={c.id}
+                className="card tap"
+                onClick={() => navigate(`/projekte/kampagnen/${c.id}`)}
+                style={{ display: 'flex', alignItems: 'center', gap: 14 }}
+              >
+                <Ring pct={pct} size={48} sw={6} color={campaignColor(c.color)}>
+                  <span style={{ fontSize: 12 }}>{Math.round(pct * 100)}</span>
+                </Ring>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="row-t" style={{ fontSize: 15 }}>
+                    {c.name}
+                  </div>
+                  <div
+                    className="dim"
+                    style={{ fontSize: 12.5, marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <StatusTag status={c.status} />
+                    {c.kpiText && (
+                      <>
+                        <span>·</span>
+                        <span style={{ color: 'var(--accent-fg)' }}>{c.kpiText}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div
-                  className="dim"
-                  style={{ fontSize: 12.5, marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}
-                >
-                  <StatusTag status="live" />
-                  <span>·</span>
-                  <span style={{ color: 'var(--accent-fg)' }}>{c.kpi}</span>
-                </div>
+                <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
               </div>
-              <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
+            );
+          })}
+          {activeCampaigns.length === 0 && (
+            <div className="card" style={{ textAlign: 'center', padding: '20px 16px' }}>
+              <div className="dim" style={{ fontSize: 13 }}>Noch keine Kampagnen angelegt.</div>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

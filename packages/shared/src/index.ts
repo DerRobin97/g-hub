@@ -121,6 +121,78 @@ export interface ProjectDetailDto extends ProjectSummaryDto {
   phases: PhaseDto[];
 }
 
+// --- Kampagnen — Bauplan §4.4 ---
+// Status für Kampagnen und Maßnahmen (deckt sich mit StatusTag im Frontend).
+export const CAMPAIGN_STATUS = ['live', 'review', 'draft'] as const;
+export type CampaignStatus = (typeof CAMPAIGN_STATUS)[number];
+
+// Maßnahmen-Art. Maschinen-Schlüssel; Anzeige-Labels via MEASURE_TYPE_LABELS.
+export const MEASURE_TYPES = ['organisch', 'promotion', 'paid', 'code'] as const;
+export type MeasureType = (typeof MEASURE_TYPES)[number];
+
+export const MEASURE_TYPE_LABELS: Record<MeasureType, string> = {
+  organisch: 'Organisch',
+  promotion: 'Promotion',
+  paid: 'Paid',
+  code: 'Code',
+};
+
+// Rabatt-Art. Maschinen-Schlüssel; Anzeige-Labels via DISCOUNT_TYPE_LABELS.
+export const DISCOUNT_TYPES = ['prozent', 'zwei_fuer_eins', 'versand', 'code'] as const;
+export type DiscountType = (typeof DISCOUNT_TYPES)[number];
+
+export const DISCOUNT_TYPE_LABELS: Record<DiscountType, string> = {
+  prozent: 'Prozent',
+  zwei_fuer_eins: '2 für 1',
+  versand: 'Versand',
+  code: 'Code',
+};
+
+export interface DiscountDto {
+  id: string;
+  measureId: string;
+  name: string;
+  type: DiscountType;
+  value: string | null;
+  code: string | null;
+  zeitraum: string | null;
+  redeemed: number;
+  limit: number;
+  order: number;
+}
+
+export interface MeasureDto {
+  id: string;
+  campaignId: string;
+  name: string;
+  type: MeasureType;
+  status: CampaignStatus;
+  progress: number;
+  postsCount: number;
+  order: number;
+  discounts: DiscountDto[];
+}
+
+export interface CampaignSummaryDto {
+  id: string;
+  name: string;
+  status: CampaignStatus;
+  channels: string[];
+  budget: number;
+  spent: number;
+  reach: number;
+  kpiText: string | null;
+  zeitraum: string | null;
+  dueLabel: string | null;
+  color: string | null;
+  measureCount: number;
+  discountCount: number;
+}
+
+export interface CampaignDetailDto extends CampaignSummaryDto {
+  measures: MeasureDto[];
+}
+
 // --- Analytics-Quellen — Bauplan §4.10 ---
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];

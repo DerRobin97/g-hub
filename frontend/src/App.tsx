@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { AuthScreen } from './auth/AuthScreen';
 import { AppShell } from './app/AppShell';
+import { Splash } from './components/Splash';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProjektePage } from './pages/ProjektePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
@@ -23,13 +24,8 @@ import { MonthDetailPage } from './features/annual-plan/MonthDetailPage';
 export function App(): React.JSX.Element {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        <span style={{ color: 'var(--text-2)' }}>Lädt …</span>
-      </main>
-    );
-  }
+  // Während die Sitzung geladen wird, zeigt der Ladescreen (Splash) Logo + Spinner.
+  if (loading) return <Splash />;
 
   if (!user) return <AuthScreen />;
 

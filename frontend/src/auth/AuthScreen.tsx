@@ -1,4 +1,5 @@
 import { googleConnectUrl } from '../lib/api';
+import { BrandLogo } from '../components/BrandLogo';
 
 function googleErrorText(code: string | null): string | null {
   if (!code) return null;
@@ -24,21 +25,8 @@ export function AuthScreen(): React.JSX.Element {
           textAlign: 'center',
         }}
       >
-        <div
-          style={{
-            width: '48px',
-            height: '48px',
-            margin: '0 auto 14px',
-            borderRadius: '14px',
-            background: 'var(--accent)',
-            color: 'var(--accent-ink)',
-            display: 'grid',
-            placeItems: 'center',
-            fontWeight: 800,
-            fontSize: '22px',
-          }}
-        >
-          G
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 18px' }}>
+          <BrandLogo height={40} />
         </div>
         <h1 style={{ margin: '0 0 4px', fontSize: '22px' }}>Willkommen bei G-Hub</h1>
         <p style={{ margin: '0 0 26px', color: 'var(--text-2)', fontSize: '14px' }}>

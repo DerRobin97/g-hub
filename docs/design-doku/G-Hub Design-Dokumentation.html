@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G-Hub · Design- & Animations-Dokumentation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap">
+<script src="quelldateien/gerberhub-loader.js"></script>
+<style>
+  :root{
+    --bg:#f6f5f2;
+    --paper:#ffffff;
+    --ink:#1b1d22;
+    --ink-2:#52555e;
+    --ink-3:#878a93;
+    --line:#e6e3dd;
+    --line-2:#d8d4cc;
+    --accent:#ee7203;          /* Marken-Orange */
+    --accent-2:#5c8a2f;        /* Marken-Grün (abgedunkelt, lesbar) */
+    --code-bg:#1a1c21;
+    --code-ink:#e7e9ee;
+    --r:14px;
+    --ff-disp:'Space Grotesk',system-ui,sans-serif;
+    --ff:'Manrope',system-ui,sans-serif;
+    --ff-mono:'Space Mono',ui-monospace,monospace;
+    --maxw:880px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--ff); font-size:15.5px; line-height:1.62;
+    -webkit-font-smoothing:antialiased; letter-spacing:-0.005em;
+  }
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* ---------- layout ---------- */
+  .wrap{display:grid; grid-template-columns:266px 1fr; align-items:start;}
+  /* sidebar */
+  .nav{
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:#101217; color:#cdd0d8; padding:30px 20px 60px;
+    border-right:1px solid #000;
+  }
+  .nav-brand{display:flex; align-items:center; gap:11px; margin-bottom:6px;}
+  .nav-logo{width:38px; height:38px; border-radius:11px; background:var(--accent); color:#1a0d02;
+    display:flex; align-items:center; justify-content:center; font-family:var(--ff-disp); font-weight:700; font-size:19px; flex-shrink:0;}
+  .nav-brand b{font-family:var(--ff-disp); font-weight:700; font-size:18px; color:#fff; letter-spacing:-0.01em;}
+  .nav-brand span{display:block; font-family:var(--ff-mono); font-size:10px; color:#7f8593; letter-spacing:0.1em; margin-top:1px;}
+  .nav-sub{font-size:12.5px; color:#80858f; margin:10px 0 22px; line-height:1.5;}
+  .nav h4{font-family:var(--ff-mono); font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#6b707b; margin:22px 0 8px;}
+  .nav a{display:block; color:#b7bcc6; font-size:13.5px; padding:5px 10px; border-radius:8px; line-height:1.35;}
+  .nav a:hover{background:rgba(255,255,255,0.06); text-decoration:none; color:#fff;}
+  .nav a.sub{padding-left:22px; font-size:12.5px; color:#8b909b;}
+  .nav-ver{margin-top:26px; font-family:var(--ff-mono); font-size:10.5px; color:#5f636d; letter-spacing:0.04em; border-top:1px solid #23262d; padding-top:14px;}
+
+  main{padding:0 0 120px;}
+  .col{max-width:var(--maxw); margin:0 auto; padding:0 40px;}
+
+  /* ---------- cover ---------- */
+  .cover{
+    background:#101217; color:#fff; padding:70px 0 64px; margin-bottom:0;
+    border-bottom:3px solid var(--accent);
+    background-image:
+      radial-gradient(60% 70% at 88% 8%, rgba(238,114,3,0.22), transparent 60%),
+      radial-gradient(50% 60% at 4% 96%, rgba(92,138,47,0.18), transparent 60%);
+  }
+  .cover .col{max-width:var(--maxw);}
+  .cover .eyebrow{font-family:var(--ff-mono); font-size:12px; letter-spacing:0.22em; text-transform:uppercase; color:var(--accent); margin-bottom:20px;}
+  .cover h1{font-family:var(--ff-disp); font-weight:700; font-size:46px; line-height:1.04; letter-spacing:-0.025em; margin:0 0 18px;}
+  .cover p{font-size:17px; color:#b9bdc6; max-width:620px; margin:0;}
+  .cover .meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:30px;}
+  .cover .meta span{font-family:var(--ff-mono); font-size:11.5px; letter-spacing:0.04em; color:#cdd0d8;
+    border:1px solid rgba(255,255,255,0.16); border-radius:999px; padding:6px 13px;}
+
+  /* ---------- typography ---------- */
+  section{padding-top:54px;}
+  h2{font-family:var(--ff-disp); font-weight:700; font-size:30px; letter-spacing:-0.02em; line-height:1.1; margin:0 0 6px;
+     padding-top:16px;}
+  .sec-no{font-family:var(--ff-mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:10px;}
+  h3{font-family:var(--ff-disp); font-weight:600; font-size:21px; letter-spacing:-0.01em; margin:38px 0 4px;}
+  h4{font-family:var(--ff-disp); font-weight:600; font-size:16px; margin:26px 0 4px;}
+  p{margin:10px 0;}
+  .lead{font-size:17px; color:var(--ink-2); margin-bottom:8px;}
+  strong{font-weight:700;}
+  em{color:var(--ink-2);}
+  hr{border:0; border-top:1px solid var(--line); margin:46px 0 0;}
+  ul,ol{padding-left:20px; margin:12px 0;}
+  li{margin:5px 0;}
+  .muted{color:var(--ink-3);}
+  code{font-family:var(--ff-mono); font-size:0.86em; background:#ece9e3; padding:1.5px 6px; border-radius:6px; color:#9a4b00; white-space:nowrap;}
+
+  /* ---------- callouts ---------- */
+  .note{
+    border-left:3px solid var(--accent); background:#fbf3ea; border-radius:0 10px 10px 0;
+    padding:13px 17px; margin:18px 0; font-size:14px; color:#5a4632;
+  }
+  .note b{color:#7a3d00;}
+  .note.green{border-color:var(--accent-2); background:#f0f4ea; color:#3f4a30;}
+  .note.green b{color:#37491f;}
+
+  /* ---------- code ---------- */
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:12px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--ff-mono); font-size:12.5px; line-height:1.62;
+    margin:16px 0; border:1px solid #2a2d34;
+  }
+  pre .c{color:#7f8694;}    /* comment */
+  pre .k{color:#ffb066;}    /* key/keyword */
+  pre .v{color:#9fd2a0;}    /* value */
+  pre .p{color:#8ab4f8;}    /* property */
+
+  /* ---------- token table ---------- */
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:13.5px;}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-family:var(--ff-mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-3); font-weight:700;}
+  td code{white-space:nowrap; background:#ece9e3;}
+  td.mono{font-family:var(--ff-mono); font-size:12px; color:var(--ink-2);}
+  .sw{display:inline-block; width:18px; height:18px; border-radius:5px; border:1px solid rgba(0,0,0,0.12); vertical-align:-4px; margin-right:8px;}
+
+  /* ---------- swatch grid ---------- */
+  .swatches{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin:20px 0;}
+  .swatch{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--paper);}
+  .swatch .chip{height:62px;}
+  .swatch .lab{padding:9px 11px;}
+  .swatch .lab b{display:block; font-size:13px; font-weight:700;}
+  .swatch .lab span{font-family:var(--ff-mono); font-size:10.5px; color:var(--ink-3); word-break:break-all;}
+
+  /* theme trio */
+  .themes{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:20px 0;}
+  .theme-card{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--paper);}
+  .theme-prev{height:96px; display:flex; align-items:center; justify-content:center; position:relative;}
+  .theme-prev .mini{width:54px; height:54px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:var(--ff-disp); font-weight:700;}
+  .theme-card .tl{padding:11px 13px;}
+  .theme-card .tl b{font-size:14px;}
+  .theme-card .tl span{display:block; font-family:var(--ff-mono); font-size:10.5px; color:var(--ink-3); margin-top:2px;}
+
+  /* ---------- spec cards (screens) ---------- */
+  .screen-block{border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:24px 26px; margin:22px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);}
+  .screen-block > h3{margin-top:0;}
+  .badge{display:inline-block; font-family:var(--ff-mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; font-weight:700;
+    padding:3px 9px; border-radius:7px; vertical-align:2px; margin-left:8px;}
+  .badge.tab{background:#e8eef6; color:#2f6abf;}
+  .badge.sheet{background:#f3eaf6; color:#8a3fb0;}
+  .badge.sub{background:#eef0e8; color:#5a7a2f;}
+  .badge.file{background:#ece9e3; color:#7a5a1a;}
+  .kv{display:grid; grid-template-columns:130px 1fr; gap:4px 16px; margin:14px 0; font-size:14px;}
+  .kv dt{font-family:var(--ff-mono); font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-3); padding-top:3px;}
+  .kv dd{margin:0;}
+
+  .anim-row{display:flex; gap:14px; align-items:baseline; padding:10px 0; border-bottom:1px dashed var(--line);}
+  .anim-row:last-child{border-bottom:0;}
+  .anim-row .nm{font-weight:700; min-width:150px; font-size:14px;}
+  .anim-row .det{font-size:13.5px; color:var(--ink-2);}
+  .anim-row .det code{font-size:11.5px;}
+
+  .pill{display:inline-block; font-family:var(--ff-mono); font-size:11px; padding:3px 9px; border-radius:999px; background:#ece9e3; color:var(--ink-2); margin:2px 4px 2px 0;}
+
+  /* live loader demo */
+  .demo-stage{position:relative; height:340px; border-radius:16px; overflow:hidden; border:1px solid var(--line-2); margin:18px 0; background:#101217;}
+  .demo-bar{display:flex; gap:10px; margin:14px 0 4px; flex-wrap:wrap;}
+  .demo-btn{font-family:var(--ff); font-weight:700; font-size:13.5px; border:0; cursor:pointer; padding:10px 18px; border-radius:11px;
+    background:var(--accent); color:#1a0d02;}
+  .demo-btn.ghost{background:#ece9e3; color:var(--ink);}
+  .demo-btn:active{transform:scale(.97);}
+
+  .footer{max-width:var(--maxw); margin:60px auto 0; padding:28px 40px; border-top:1px solid var(--line);
+    font-family:var(--ff-mono); font-size:11.5px; color:var(--ink-3); letter-spacing:0.03em;}
+
+  @media print{
+    .nav{display:none;}
+    .wrap{grid-template-columns:1fr;}
+    .demo-stage{display:none;}
+    body{font-size:11pt; background:#fff;}
+    section{page-break-inside:auto;}
+    .screen-block{page-break-inside:avoid; box-shadow:none;}
+    h2{page-break-after:avoid;}
+    pre{white-space:pre-wrap; word-break:break-word;}
+    .cover{background:#101217 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+  @media (max-width:880px){
+    .wrap{grid-template-columns:1fr;}
+    .nav{position:static; height:auto;}
+    .col{padding:0 22px;}
+    .themes{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="nav">
+    <div class="nav-brand">
+      <span class="nav-logo">G</span>
+      <div><b>G-Hub</b><span>MARKETING-HUB</span></div>
+    </div>
+    <div class="nav-sub">Vollständige Design- & Animations-Spezifikation für den 1:1-Nachbau.</div>
+
+    <h4>Grundlagen</h4>
+    <a href="#architektur">1 · Architektur & Aufbau</a>
+    <a href="#farben">2 · Farben & Themes</a>
+    <a href="#typo">3 · Typografie</a>
+    <a href="#form">4 · Form, Raum & Schatten</a>
+
+    <h4>Bewegung</h4>
+    <a href="#ladescreen">5 · Ladeanimation</a>
+    <a href="#bewegung">6 · Bewegungssprache</a>
+
+    <h4>Bausteine</h4>
+    <a href="#komponenten">7 · Komponenten</a>
+    <a href="#shell">8 · App-Shell & Navigation</a>
+
+    <h4>Seiten</h4>
+    <a href="#s-dashboard" class="sub">Startseite / Dashboard</a>
+    <a href="#s-projekte" class="sub">Projekte-Hub</a>
+    <a href="#s-jahresplan" class="sub">Jahresplan</a>
+    <a href="#s-planer" class="sub">Social-Media-Planer</a>
+    <a href="#s-kampagnen" class="sub">Kampagnenmanager</a>
+    <a href="#s-pm" class="sub">Projektmanager</a>
+    <a href="#s-analytics" class="sub">Analytics</a>
+    <a href="#s-profil" class="sub">Profil & Arbeitszeit</a>
+
+    <h4>Fenster & Extras</h4>
+    <a href="#sheets">9 · Bottom-Sheets</a>
+    <a href="#ki">10 · KI-Assistent</a>
+    <a href="#ipad">11 · iPad-Querformat</a>
+    <a href="#daten">12 · Datenmodell</a>
+    <a href="#dateien">Anhang · Quelldateien</a>
+
+    <div class="nav-ver">Version 2.6.0 · Stand Juni 2026</div>
+  </aside>
+
+  <!-- ============ CONTENT ============ -->
+  <main>
+
+    <!-- COVER -->
+    <div class="cover">
+      <div class="col">
+        <div class="eyebrow">Design- & Animations-Dokumentation</div>
+        <h1>G-Hub — Marketing-Hub<br>Spezifikation für den 1:1-Nachbau</h1>
+        <p>Dieses Dokument beschreibt das komplette visuelle System, jede Seite und jede Animation der G-Hub-App (iPhone, iPad-Querformat &amp; Web) so vollständig, dass die Oberfläche pixel- und bewegungsgenau rekonstruiert werden kann. Die Ladeanimation liegt als einsatzbereite Datei bei.</p>
+        <div class="meta">
+          <span>iOS · iPadOS · Web</span>
+          <span>Dark / Grau / Hell</span>
+          <span>React + Vanilla-CSS</span>
+          <span>Sprache: Deutsch</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+
+      <!-- =================================================== 1 -->
+      <section id="architektur">
+        <span class="sec-no">Kapitel 1</span>
+        <h2>Architektur &amp; Aufbau</h2>
+        <p class="lead">G-Hub ist eine mobile-first Marketing-Management-App für ein Garten- &amp; Forsttechnik-Fachgeschäft (Gerber). Sie wird in drei Gehäusen ausgeliefert, teilt sich aber einen einzigen Quellcode.</p>
+
+        <h3>Geräte &amp; Renderziele</h3>
+        <table>
+          <tr><th>Ziel</th><th>Maße (Designgröße)</th><th>Besonderheit</th></tr>
+          <tr><td><b>iPhone</b></td><td class="mono">402 × 874 px</td><td>Bottom-Tab-Navigation, KI als Bottom-Sheet, schwebender KI-Button</td></tr>
+          <tr><td><b>iPad · Querformat</b></td><td class="mono">1194 × 834 px</td><td>App-Spalte (~70 %) + andockbares KI-Panel rechts (~30 %)</td></tr>
+          <tr><td><b>Web</b></td><td class="mono">responsiv</td><td>eigene Datei <code>G-Hub - Web.html</code>, gleiche Routing-Logik</td></tr>
+        </table>
+        <p>Der gemeinsame Frame skaliert das fixe Geräte-Layout per <code>transform: scale()</code> mittig in den Viewport (Letterboxing auf <code>#0a0b0d</code>). Bedienelemente liegen außerhalb des skalierten Bereichs.</p>
+
+        <h3>Technischer Stack</h3>
+        <ul>
+          <li><b>React 18.3.1</b> über UMD + <b>Babel Standalone</b> (Inline-JSX, kein Build-Schritt).</li>
+          <li><b>Reines CSS</b> mit Custom-Properties (Design-Tokens) — keine Utility-Frameworks.</li>
+          <li><b>Vanilla-Web-Component</b> für den Ladescreen (<code>&lt;gerber-hub-loader&gt;</code>), framework-unabhängig.</li>
+          <li>Zustand pro App in React-State; <b>Darstellung</b> (Theme/Akzent) &amp; Geräte-Position in <code>localStorage</code>.</li>
+        </ul>
+
+        <h3>Dateistruktur</h3>
+        <pre><span class="c">/  (Geräte-Frames)</span>
+G-Hub - iPhone + iPad.html   <span class="c">// Frame, Skalierung, Ladescreen-Regie, Dev-Tool</span>
+G-Hub - Web.html             <span class="c">// Web-Variante</span>
+
+<span class="c">/app  (geteilter Quellcode)</span>
+data.js            <span class="c">// alle Inhalte/Mock-Daten + GHUB_VERSION</span>
+appearance.js      <span class="c">// Theme- & Akzent-Tokens (3 Themes, 2 Akzente, frei)</span>
+gerberhub-loader.js<span class="c">// Ladescreen als Web-Component (Splash-Animation)</span>
+styles.css         <span class="c">// Design-Tokens + alle Komponenten-Styles</span>
+jahresplan.css     <span class="c">// Zusatz-Styles Jahresplan</span>
+icons.jsx          <span class="c">// Line-Icon-Set (stroke 1.8)</span>
+ui.jsx             <span class="c">// geteilte Bausteine: Charts, KPI, Avatare, Reveal-Hook</span>
+main.jsx           <span class="c">// App-Shell: Header, Nav, Sheet-Routing, Tweaks</span>
+dashboard.jsx · projekte-hub.jsx · jahresplan.jsx
+planer.jsx · kampagnen.jsx · projektmanager.jsx
+analytics.jsx · aufgaben.jsx · news.jsx
+sheets-create.jsx · sheets-hub.jsx · ai-assistant.jsx</pre>
+        <div class="note">Die Skript-Ladereihenfolge ist relevant: <code>data.js</code> → <code>appearance.js</code> → <code>gerberhub-loader.js</code> → Frames → Babel-Module (Icons → UI → Screens → <code>main.jsx</code> zuletzt). Jedes Screen-Modul exportiert seine Komponenten über <code>Object.assign(window, …)</code>, da Babel-Skripte getrennte Scopes haben.</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 2 -->
+      <section id="farben">
+        <span class="sec-no">Kapitel 2</span>
+        <h2>Farben &amp; Themes</h2>
+        <p class="lead">Die Palette ist kühl-neutral (Hue 264 in OKLCH) mit einem kräftigen Marken-Akzent. Es gibt drei vollständige Themes und zwei benannte Akzente plus frei wählbare Farbe. Alle Werte werden als CSS-Variablen auf <code>.app</code> bzw. <code>.ipad-screen</code> gesetzt.</p>
+
+        <h3>Die drei Themes</h3>
+        <div class="themes">
+          <div class="theme-card">
+            <div class="theme-prev" style="background:oklch(0.145 0.004 264)"><div class="mini" style="background:#cdf24d;color:#161a07">Aa</div></div>
+            <div class="tl"><b>Schwarz (dark)</b><span>Standard · Near-Black</span></div>
+          </div>
+          <div class="theme-card">
+            <div class="theme-prev" style="background:oklch(0.335 0.006 264)"><div class="mini" style="background:#cdf24d;color:#161a07">Aa</div></div>
+            <div class="tl"><b>Grau (gray)</b><span>Graphit · helle Schrift</span></div>
+          </div>
+          <div class="theme-card">
+            <div class="theme-prev" style="background:oklch(0.965 0.004 264)"><div class="mini" style="background:#cdf24d;color:#161a07">Aa</div></div>
+            <div class="tl"><b>Weiß (light)</b><span>Hell · dunkle Schrift</span></div>
+          </div>
+        </div>
+
+        <h4>Token-Werte je Theme</h4>
+        <table>
+          <tr><th>Token</th><th>Schwarz</th><th>Grau</th><th>Weiß</th></tr>
+          <tr><td class="mono">--bg</td><td class="mono">oklch(.145 .004 264)</td><td class="mono">oklch(.335 .006 264)</td><td class="mono">oklch(.965 .004 264)</td></tr>
+          <tr><td class="mono">--bg-2</td><td class="mono">oklch(.175 .005 264)</td><td class="mono">oklch(.365 .006 264)</td><td class="mono">#ffffff</td></tr>
+          <tr><td class="mono">--surface</td><td class="mono">oklch(.20 .005 264)</td><td class="mono">oklch(.39 .007 264)</td><td class="mono">#ffffff</td></tr>
+          <tr><td class="mono">--surface-2</td><td class="mono">oklch(.24 .006 264)</td><td class="mono">oklch(.435 .008 264)</td><td class="mono">oklch(.955 .004 264)</td></tr>
+          <tr><td class="mono">--surface-3</td><td class="mono">oklch(.296 .007 264)</td><td class="mono">oklch(.49 .009 264)</td><td class="mono">oklch(.915 .005 264)</td></tr>
+          <tr><td class="mono">--line</td><td class="mono">oklch(1 0 0 /.08)</td><td class="mono">oklch(1 0 0 /.10)</td><td class="mono">rgba(0,0,0,.13)</td></tr>
+          <tr><td class="mono">--line-strong</td><td class="mono">oklch(1 0 0 /.14)</td><td class="mono">oklch(1 0 0 /.18)</td><td class="mono">rgba(0,0,0,.22)</td></tr>
+          <tr><td class="mono">--text</td><td class="mono">oklch(.975 .004 264)</td><td class="mono">oklch(.985 .003 264)</td><td class="mono">oklch(.23 .012 264)</td></tr>
+          <tr><td class="mono">--text-2</td><td class="mono">oklch(.74 .009 264)</td><td class="mono">oklch(.83 .008 264)</td><td class="mono">oklch(.40 .012 264)</td></tr>
+          <tr><td class="mono">--text-3</td><td class="mono">oklch(.56 .011 264)</td><td class="mono">oklch(.67 .010 264)</td><td class="mono">oklch(.50 .012 264)</td></tr>
+        </table>
+        <p class="muted">Im hellen Modus werden zusätzlich die Semantik-Farben abgedunkelt, damit sie auf Weiß lesbar bleiben: <code>--ok</code> <span class="sw" style="background:oklch(.55 .13 162)"></span>, <code>--warn</code> <span class="sw" style="background:oklch(.60 .13 72)"></span>, <code>--bad</code> <span class="sw" style="background:oklch(.55 .19 25)"></span>. In Schwarz/Grau: <code>--ok #5fd3a3</code>, <code>--warn #ffce6b</code>, <code>--bad #ff7a6b</code>.</p>
+
+        <h3>Akzente</h3>
+        <p>Ein Akzent ist immer ein Tripel <code>[Hauptfarbe, Tinte-auf-Akzent, Text-im-Hellmodus]</code>. <code>--accent-fg</code> nimmt im hellen Modus die abgedunkelte dritte Variante (lesbar als Text/Icon).</p>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#cdf24d"></div><div class="lab"><b>Grün (Standard)</b><span>#cdf24d · ink #161a07</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#ee7203"></div><div class="lab"><b>Orange (Marke)</b><span>#ee7203 · ink #2a1402</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#5cc8ff"></div><div class="lab"><b>Frei wählbar</b><span>z. B. #5cc8ff (Color-Picker)</span></div></div>
+        </div>
+        <p>Aus dem Akzent abgeleitet (in <code>styles.css</code>):</p>
+        <pre><span class="p">--accent-soft</span>: color-mix(in oklab, <span class="k">var(--accent)</span> 16%, transparent);
+<span class="p">--accent-line</span>: color-mix(in oklab, <span class="k">var(--accent)</span> 38%, transparent);
+<span class="p">--accent-glow</span>: color-mix(in oklab, <span class="k">var(--accent)</span> 40%, transparent);</pre>
+        <div class="note">Bei „Eigene Farbe“ wird per Relativ-Luminanz entschieden: hell → dunkle Tinte <code>#161a07</code>, dunkel → weiße Tinte. Sehr helle eigene Akzente werden im Hellmodus per <code>color-mix(… 52%, #101012)</code> als Text abgedunkelt. Logik in <code>appearance.js → accentTokens()</code>.</p></div>
+
+        <h3>Kanal-Farben (Social)</h3>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#e1568b"></div><div class="lab"><b>Instagram</b><span>--ch-instagram</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#3f9bff"></div><div class="lab"><b>LinkedIn</b><span>--ch-linkedin</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#e7e9ec"></div><div class="lab"><b>X</b><span>--ch-x</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#5a8bff"></div><div class="lab"><b>Facebook</b><span>--ch-facebook</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#3fe0d0"></div><div class="lab"><b>TikTok</b><span>--ch-tiktok</span></div></div>
+          <div class="swatch"><div class="chip" style="background:#ff6b5c"></div><div class="lab"><b>YouTube</b><span>--ch-youtube</span></div></div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 3 -->
+      <section id="typo">
+        <span class="sec-no">Kapitel 3</span>
+        <h2>Typografie</h2>
+        <p class="lead">Drei Schriften mit klaren Rollen. Grundlinie ist leicht negativ getrackt (<code>letter-spacing:-0.01em</code> auf <code>.app</code>).</p>
+        <table>
+          <tr><th>Rolle</th><th>Familie</th><th>Variable</th><th>Einsatz</th></tr>
+          <tr><td><b>Display</b></td><td>Space Grotesk</td><td class="mono">--ff-disp</td><td>Titel, KPI-Zahlen, Section-Titel, große Werte (600/700)</td></tr>
+          <tr><td><b>Text</b></td><td>Manrope</td><td class="mono">--ff</td><td>Fließtext, Buttons, Listen, Labels (400–800)</td></tr>
+          <tr><td><b>Mono</b></td><td>Space Mono</td><td class="mono">--ff-mono</td><td>Kicker, Tags, Zeitstempel, Codes, Meta (400/700)</td></tr>
+        </table>
+        <p>Der Ladescreen verwendet als einzige Ausnahme <b>Baloo 2</b> (700/800) für das Wort „Hub“ und das Logo-Lockup.</p>
+
+        <h4>Typo-Skala (iPhone)</h4>
+        <table>
+          <tr><th>Element</th><th>Größe / Gewicht</th><th>Familie</th></tr>
+          <tr><td>Header-Kicker</td><td class="mono">11px · uppercase · 0.16em</td><td>Mono</td></tr>
+          <tr><td>Header-Titel</td><td class="mono">22px · 600</td><td>Display</td></tr>
+          <tr><td>Section-Titel</td><td class="mono">16px · 600</td><td>Display</td></tr>
+          <tr><td>KPI-Wert</td><td class="mono">27px · 600 · −0.02em</td><td>Display</td></tr>
+          <tr><td>Fokus-/Hero-Wert</td><td class="mono">34–48px · 700</td><td>Display</td></tr>
+          <tr><td>Listentitel</td><td class="mono">14.5px · 600</td><td>Text</td></tr>
+          <tr><td>Sekundärtext</td><td class="mono">12.5px · --text-3</td><td>Text</td></tr>
+          <tr><td>Tag / Label</td><td class="mono">10–11px · 700 · uppercase</td><td>Mono</td></tr>
+        </table>
+        <div class="note">Zahlenwerte nutzen <code>font-variant-numeric: tabular-nums</code> (Klasse <code>.tabular</code>), damit Count-up-Animationen nicht springen. Dezimaltrennzeichen ist immer das deutsche Komma (<code>toLocaleString('de-DE')</code>).</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 4 -->
+      <section id="form">
+        <span class="sec-no">Kapitel 4</span>
+        <h2>Form, Raum &amp; Schatten</h2>
+
+        <h3>Eckenradien (Tweak-abhängig)</h3>
+        <p>Drei Radius-Sätze sind als Tweak umschaltbar (<code>soft / standard / sharp</code>). Standard ist die Referenz:</p>
+        <table>
+          <tr><th>Variable</th><th>soft</th><th>standard</th><th>sharp</th><th>Einsatz</th></tr>
+          <tr><td class="mono">--r-lg</td><td class="mono">30px</td><td class="mono">26px</td><td class="mono">16px</td><td>Feature-Karten, große Container</td></tr>
+          <tr><td class="mono">--r-md</td><td class="mono">24px</td><td class="mono">20px</td><td class="mono">12px</td><td>Standard-Karten, KPIs</td></tr>
+          <tr><td class="mono">--r-sm</td><td class="mono">16px</td><td class="mono">14px</td><td class="mono">9px</td><td>Chips, kleine Flächen</td></tr>
+          <tr><td class="mono">--r-xs</td><td class="mono" colspan="3">10px (fix)</td><td>Mikro-Elemente</td></tr>
+        </table>
+
+        <h3>Schatten</h3>
+        <pre><span class="p">--shadow</span>: 0 18px 40px -18px rgba(0,0,0,.7);   <span class="c">// dark</span>
+<span class="c">// Karten sind i. d. R. flach (nur 1px --line); Schatten v. a. an
+// schwebenden Elementen: FAB, Sheets, Nav-Glas, iPad-KI-Panel.</span>
+Sheet:   0 -20px 60px -20px rgba(0,0,0,.8);
+FAB:     0 14px 34px -12px rgba(0,0,0,.75);
+Nav-Glas:0 22px 50px -20px rgba(0,0,0,.8), inset … (siehe Liquid-Glass)</pre>
+
+        <h3>Abstände &amp; Layout-Raster</h3>
+        <ul>
+          <li>Scroll-Container <code>.scroll</code>: Padding <code>6px 20px 124px</code> (unten Platz für Nav).</li>
+          <li>Header <code>.hdr</code>: <code>60px 20px 14px</code> (oben Safe-Area/Statusbar).</li>
+          <li>Vertikaler Standard-Stapel <code>.stack</code>: <code>display:flex; flex-direction:column; gap:14px</code>.</li>
+          <li>Karten-Innenabstand: <code>16px</code> (Standard), Feature/Hero <code>18px</code>.</li>
+          <li>KPI-Raster: 2 Spalten (iPhone), 4 Spalten (iPad).</li>
+        </ul>
+        <div class="note green"><b>Grundprinzip:</b> Flächen werden über <code>--surface</code>-Stufen und 1px-Linien (<code>--line</code>) getrennt, nicht über Schlagschatten. Tiefe entsteht nur dort, wo Elemente physisch „schweben“.</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 5 -->
+      <section id="ladescreen">
+        <span class="sec-no">Kapitel 5</span>
+        <h2>Ladeanimation (Splash)</h2>
+        <p class="lead">Der Ladescreen ist eine eigenständige Web-Component <code>&lt;gerber-hub-loader&gt;</code> (Datei <span class="badge file">quelldateien/gerberhub-loader.js</span>) — keine Abhängigkeiten, läuft in React, Vue, Angular und purem HTML. Unten läuft die <b>echte</b> Animation.</p>
+
+        <div class="demo-stage" id="loaderStage"></div>
+        <div class="demo-bar">
+          <button class="demo-btn" id="replayBtn">▶ Animation erneut abspielen</button>
+          <button class="demo-btn ghost" id="darkBtn">Hintergrund: Schwarz</button>
+          <button class="demo-btn ghost" id="lightBtn">Hintergrund: Weiß</button>
+        </div>
+        <p class="muted">Hinweis: läuft mit <code>min-visible</code> auf Dauerschleife, damit man sie hier beobachten kann. In der App blendet sie nach ~3,4 s aus.</p>
+
+        <h3>Aufbau</h3>
+        <ul>
+          <li><b>Glow:</b> radialer, weich geblurter Kreis hinter dem Logo (Akzentfarbe, 14 % Deckkraft).</li>
+          <li><b>Logo-Lockup:</b> Vektor-Schriftzug „Gerber“ (einzeln animierte Buchstaben <code>.ltr</code> + Kreis-Icon <code>.ico</code>) und rechtsbündig darunter das Wort <b>„Hub“</b> in Baloo&nbsp;2 800 mit schwarzer Kontur (<code>-webkit-text-stroke</code>), Farbe = Akzent (Orange <code>#ee7203</code>).</li>
+          <li><b>Ring-Spinner:</b> unten zentriert, 38px, 4px Rand, oberer Bogen in Akzentfarbe, Dauerrotation.</li>
+          <li><b>Version:</b> optional ganz unten als Mono-Text, 34 % Deckkraft.</li>
+        </ul>
+
+        <h3>Zeitlicher Ablauf (Tempo <code>speed=0.85</code>, Zeitskala <code>--ghl-t = 1/speed</code>)</h3>
+        <div style="margin:14px 0">
+          <div class="anim-row"><span class="nm">Glow</span><span class="det"><code>ghl-glow</code> · 1.1s × t · ease · fadet ein (Opazität 0→1)</span></div>
+          <div class="anim-row"><span class="nm">Buchstaben „pop“</span><span class="det"><code>ghl-pop</code> · 0.5s × t · <code>cubic-bezier(.2,1.55,.35,1)</code> · von <code>scale(.2)</code>→1, gestaffelt: Delay <code>0.45s×t + index·0.11s×t</code></span></div>
+          <div class="anim-row"><span class="nm">Kreis-Icon</span><span class="det"><code>ghl-ring</code> · 0.6s × t · <code>cubic-bezier(.2,1.7,.35,1)</code> · von <code>scale(0) rotate(-120°)</code>→ <code>scale(1) rotate(0)</code></span></div>
+          <div class="anim-row"><span class="nm">„Hub“-Wort</span><span class="det"><code>ghl-hubpop</code> · 0.5s × t · <code>cubic-bezier(.2,1.6,.4,1)</code> · von <code>translateY(-.35em) scale(.7)</code>→1, Delay <code>1.25s×t</code></span></div>
+          <div class="anim-row"><span class="nm">Spinner fadet ein</span><span class="det"><code>ghl-fade</code> · 0.6s × t · Delay <code>1.5s×t</code>, danach <code>ghl-spin</code> 0.8s linear ∞</span></div>
+          <div class="anim-row"><span class="nm">Endzustand sichern</span><span class="det">Klasse <code>.ghl-settled</code> nach <code>2100×t + 300ms</code> → alle Elemente fix sichtbar (Fallback)</span></div>
+        </div>
+
+        <h3>Ausblenden &amp; Reveal-Übergabe (Frame-Regie)</h3>
+        <p>Im Geräte-Frame steuert <code>mountSplash()</code> den Ablauf: Mindestanzeige ~3,4 s, dann:</p>
+        <ol>
+          <li><code>window.__appReady = true</code> und Event <code>app:reveal</code> wird gefeuert (startet die Screen-Reveals der App).</li>
+          <li>Das Lockup skaliert auf <code>scale(1.5)</code> und fadet (0.6 s, <code>cubic-bezier(.6,0,.28,1)</code>).</li>
+          <li>Die ganze Component skaliert auf <code>1.08</code>, blurrt <code>4px</code> und fadet (Transform-Origin <code>50% 42%</code>), dann <code>remove()</code> nach 720 ms.</li>
+        </ol>
+        <div class="note"><b>Theming des Splash:</b> Hintergrund kommt aus dem App-Theme (<code>splashBg()</code> → Schwarz/Grau/Weiß), der Akzent ist <b>immer</b> das Marken-Orange <code>#ee7203</code> (themen-unabhängig). Reduzierte Bewegung (<code>prefers-reduced-motion</code>) zeigt sofort den Endzustand.</div>
+
+        <h3>API der Component</h3>
+        <pre><span class="c">&lt;!-- pures HTML --&gt;</span>
+&lt;script src="gerberhub-loader.js"&gt;&lt;/script&gt;
+&lt;gerber-hub-loader <span class="p">bg</span>="#101217" <span class="p">accent</span>="#ee7203"
+   <span class="p">speed</span>="0.85" <span class="p">min-visible</span>="1800" <span class="p">version</span>="Version 2.6.0"&gt;&lt;/gerber-hub-loader&gt;
+
+<span class="c">// ausblenden, sobald App bereit:</span>
+document.querySelector('gerber-hub-loader').hide();   <span class="c">// Promise</span>
+el.replay();                                          <span class="c">// neu abspielen</span>
+<span class="c">// Event 'gerberhub:hidden' nach Fade · Attribut auto-hide → bei window.load</span></pre>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 6 -->
+      <section id="bewegung">
+        <span class="sec-no">Kapitel 6</span>
+        <h2>Bewegungssprache</h2>
+        <p class="lead">Bewegung ist ruhig, federnd und zweckgebunden. Es gibt zwei Standard-Easings, die fast überall wiederkehren. Alle dekorativen Animationen respektieren <code>prefers-reduced-motion</code>.</p>
+        <table>
+          <tr><th>Easing</th><th>Kurve</th><th>Charakter / Einsatz</th></tr>
+          <tr><td><b>Soft-Out</b></td><td class="mono">cubic-bezier(.22,1,.36,1)</td><td>ruhiges Ankommen — Screens, Reveals, Charts, Balken</td></tr>
+          <tr><td><b>Spring</b></td><td class="mono">cubic-bezier(.34,1.56,.64,1)</td><td>federnder Overshoot — FAB-Dock, Sheets, Nav-Collapse</td></tr>
+          <tr><td><b>Material-Standard</b></td><td class="mono">cubic-bezier(.4,0,.2,1)</td><td>Breiten-/Layout-Transitions (iPad-Spalte, Nav)</td></tr>
+        </table>
+
+        <h3>Globale Animationen</h3>
+        <div style="margin:14px 0">
+          <div class="anim-row"><span class="nm">Screen-Eintritt</span><span class="det"><code>screenIn</code> · 0.42s · Soft-Out · <code>translateY(8px)→0</code> (jeder Tab-/Routenwechsel)</span></div>
+          <div class="anim-row"><span class="nm">Entrance-Reveal</span><span class="det"><code>revFade</code> · 0.5s · Soft-Out · Opazität 0→1, pro Element gestaffelt via <code>--rd</code> (z. B. 40ms, 130ms …). Gesteuert vom <code>useReveal</code>-Hook + IntersectionLogik beim Scroll.</span></div>
+          <div class="anim-row"><span class="nm">Count-up Zahlen</span><span class="det">rAF-Tween 900ms, Ease <code>1−(1−p)³</code>; <code>CountUp</code>-Komponente, mit Fallback auf Endwert (Hintergrund-Tabs)</span></div>
+          <div class="anim-row"><span class="nm">Sheet öffnen</span><span class="det"><code>sheetUp</code> · 0.4s · Soft-Out · <code>translateY(100%)→0</code>. Varianten: Suche federt (Spring), KI nutzt „Spark-Slide“ (s. u.)</span></div>
+          <div class="anim-row"><span class="nm">Sheet schließen</span><span class="det">WAAPI 0.3s · <code>cubic-bezier(.4,0,1,1)</code> · <code>→ translateY(100%) scale(.985)</code> + Scrim-Fade; zentrierte iPad-Sheets behalten <code>translateX(-50%)</code></span></div>
+          <div class="anim-row"><span class="nm">Scrim</span><span class="det"><code>fade</code> · 0.25s · <code>rgba(0,0,0,.55)</code> + <code>backdrop-blur(3px)</code></span></div>
+          <div class="anim-row"><span class="nm">Chat-Nachricht</span><span class="det"><code>msgIn</code> · 0.32s · Soft-Out · <code>translateY(8px)→0</code>; Tipp-Indikator <code>aiBlink</code> 1.2s ∞ (3 Punkte versetzt)</span></div>
+          <div class="anim-row"><span class="nm">KI-FAB Puls</span><span class="det"><code>aiPulse</code> · 2.8s ∞ · expandierender Box-Shadow-Ring in Akzentfarbe</span></div>
+        </div>
+
+        <h3>Nav-Collapse beim Scrollen</h3>
+        <p>Sobald <code>scrollTop &gt; 18px</code>, klappt die Bottom-Nav ein (<code>nav-collapsed</code>): Labels verschwinden (<code>max-height 14→0</code>), Icons schrumpfen auf 19px, der zentrale FAB wird von 54→30px. Alle Übergänge 0.42s <code>cubic-bezier(.4,0,.2,1)</code>. Beim Routenwechsel wird die Nav wieder ausgeklappt.</p>
+
+        <h3>KI „Spark-Slide“ (nur Handy-Sheet)</h3>
+        <p>Beim Öffnen des KI-Assistenten wird per WAAPI an der FAB-Position (unten rechts) ein Funke gezündet, dann gleitet das Sheet hoch:</p>
+        <pre><span class="c">// 1) Funken-Burst am FAB</span>
+spark.animate([
+  {opacity:1, transform:'scale(.3)',  boxShadow:'0 0 0 0 var(--accent-glow)'},
+  {opacity:0, transform:'scale(2.8)', boxShadow:'0 0 0 30px transparent'}
+], {duration:460, easing:'cubic-bezier(.2,.7,.3,1)'});
+<span class="c">// 2) Sheet slide-up mit Overshoot, 150ms später</span>
+el.animate([{opacity:0, transform:'translateY(82%) scale(.97)'},{opacity:1}],
+  {duration:520, delay:150, easing:'cubic-bezier(.34,1.4,.4,1)'});</pre>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 7 -->
+      <section id="komponenten">
+        <span class="sec-no">Kapitel 7</span>
+        <h2>Komponenten-Bibliothek</h2>
+        <p class="lead">Alle Bausteine leben in <code>styles.css</code> (Layout/Optik) und <code>ui.jsx</code> (logische Bausteine). Hier die wichtigsten mit ihren Kernregeln.</p>
+
+        <h3>Karten</h3>
+        <div class="kv">
+          <dt>.card</dt><dd><code>--surface</code> · 1px <code>--line</code> · <code>--r-md</code> · Padding 16px · <code>overflow:hidden</code></dd>
+          <dt>.card.tap</dt><dd>klickbar: <code>:active</code> <code>scale(.985)</code>, Hover hebt Rand auf <code>--line-strong</code></dd>
+          <dt>.feature</dt><dd>Akzent-Hero: radialer Akzent-Verlauf oben rechts + <code>--accent-line</code>-Rand, <code>--r-lg</code></dd>
+        </div>
+
+        <h3>KPI-Kacheln</h3>
+        <p><code>.kpi</code> (min-height 118px): Icon oben-links + Delta-Pille oben-rechts, großer Wert (Display 27px), Label, optionale Sparkline am unteren Rand. Kompakte Variante <code>.dash-chip</code> für die Vier-Spalten-Leiste auf der Startseite.</p>
+
+        <h3>Delta-Pille</h3>
+        <p><code>.delta.up</code> = <code>--ok</code> auf <code>ok 16%</code>-Fläche; <code>.delta.down</code> = <code>--bad</code>. Trend-Icon (bei down vertikal gespiegelt), Mono-Schrift, Pille <code>border-radius:999px</code>.</p>
+
+        <h3>Buttons</h3>
+        <div class="kv">
+          <dt>.btn</dt><dd>Höhe 50px · <code>border-radius:14px</code> · 700 · <code>:active scale(.97)</code></dd>
+          <dt>.btn-primary</dt><dd>Akzent-Fläche + Akzent-Tinte + Glow-Shadow; Hover <code>brightness(1.05)</code></dd>
+          <dt>.btn-ghost</dt><dd><code>--surface-2</code> + 1px <code>--line</code></dd>
+        </div>
+
+        <h3>Chips, Segmente &amp; Toggles</h3>
+        <ul>
+          <li><b>.chip</b> — Pille; aktiv (<code>.on</code>) = Akzent-Fläche + Tinte. In horizontal scrollbaren <code>.chip-row</code> (Scrollbar versteckt).</li>
+          <li><b>.seg</b> — segmentierte Steuerung, aktiv = <code>--surface-3</code> hinterlegt.</li>
+          <li><b>.smp-switch</b> — Planer-Umschalter (Übersicht/Kalender/Timeline), aktiv = Akzent + Glow.</li>
+          <li><b>.smp-toggle</b> — iOS-Schalter 44×26, Knopf gleitet <code>left 3→21px</code>, an = Akzent.</li>
+        </ul>
+
+        <h3>Listenzeile</h3>
+        <p><code>.row</code>: Flex, 12px Padding, Trennlinie über <code>.row + .row</code>. Titel <code>.row-t</code> (600, Ellipsis), Subtext <code>.row-s</code> (<code>--text-3</code>).</p>
+
+        <h3>Charts (SVG, in <code>ui.jsx</code>)</h3>
+        <table>
+          <tr><th>Komponente</th><th>Beschreibung</th></tr>
+          <tr><td><b>Spark</b></td><td>geglättete Bezier-Kurve (Catmull-artig) + Flächen-Verlauf (Akzent, 30→0 % Opazität). <code>preserveAspectRatio:none</code></td></tr>
+          <tr><td><b>Bars</b></td><td>Balken, letzter Balken in Akzent; Wachstum <code>height</code>-Transition 0.6s Soft-Out</td></tr>
+          <tr><td><b>Ring</b></td><td>Donut aus zwei Kreisen; Fortschritt via <code>stroke-dashoffset</code>-Transition 0.9s Soft-Out, −90° gedreht</td></tr>
+        </table>
+
+        <h3>Avatare &amp; Kanal-Marken</h3>
+        <ul>
+          <li><b>Avatar</b> — runder Verlaufs-Kreis mit Initialen; Verläufe pro Teammitglied in <code>data.js</code>.</li>
+          <li><b>AvatarStack</b> — überlappend (<code>margin-left:-9px</code>), Rest als <code>+N</code>.</li>
+          <li><b>ChannelBadge</b> — abgerundetes Quadrat (11px Radius) in Kanalfarbe mit Kürzel (IG, in, X, f, TT, YT).</li>
+        </ul>
+
+        <h3>Icons</h3>
+        <p>Ein einziges Line-Icon-Set (<code>icons.jsx</code>): <code>viewBox 0 0 24 24</code>, <code>stroke=currentColor</code>, Standard-Strichstärke 1.8, runde Enden/Ecken. <code>&lt;Icon name="…" size={22} stroke={1.8} /&gt;</code>. ~50 Glyphen (home, layers, chart, user, bell, search, sparkle, bot, zap, …).</p>
+        <div class="note green">Keine Emoji als UI-Elemente — Ausnahme: vereinzelte Emoji innerhalb von <b>Inhalts-Texten</b> (Captions, KI-Antworten, „Alles erledigt 🎉“), die bewusst zum lockeren Marketing-Ton gehören.</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 8 -->
+      <section id="shell">
+        <span class="sec-no">Kapitel 8</span>
+        <h2>App-Shell &amp; Navigation</h2>
+        <p class="lead">Die Shell (<code>main.jsx → App</code>) besteht aus drei festen Zonen: Header, Scroll-Body, Bottom-Nav — plus schwebendem KI-Button und aktivem Sheet.</p>
+
+        <h3>Header</h3>
+        <p>Links optional ein reiner Zurück-Pfeil (<code>.back-btn</code>, schiebt bei Hover −2px). Mitte: Kicker (Mono, uppercase) + Titel (Display 22px). Der Startseiten-Titel ist tageszeitabhängig: <em>„Guten Morgen/Tag/Abend, Robin“</em>. Rechts: Such-Button und kombinierter Mitteilungs-Button mit zwei Badges — links (Akzent) = ungelesene News, rechts (rot) = Benachrichtigungen.</p>
+
+        <h3>Bottom-Navigation (Liquid Glass)</h3>
+        <p>Fünf Slots: <b>Startseite · Projekte · [＋-FAB] · Analytics · Profil</b>. Das <code>.nav-wrap</code> ist im Dark-/Grau-Modus echtes „Liquid Glass“:</p>
+        <pre><span class="p">background</span>: radial-gradient(120% 100% at 16% -25%, rgba(255,255,255,.22), transparent 56%),
+            linear-gradient(158deg, rgba(255,255,255,.16), rgba(255,255,255,.035) 42%, rgba(255,255,255,.085)),
+            color-mix(in oklab, var(--surface) 30%, transparent);
+<span class="p">backdrop-filter</span>: blur(30px) saturate(1.9) brightness(1.05);
+<span class="p">box-shadow</span>: 0 22px 50px -20px rgba(0,0,0,.8), inset 0 1.5px 1px rgba(255,255,255,.5), …;</pre>
+        <p>Im <b>hellen Modus</b> wird daraus eine solide weiße Karte (kein Blur) mit weichem Schatten. Aktiver Tab: Text <code>--text</code>, Icon in Akzentfarbe mit Glow-<code>drop-shadow</code>. Der zentrale FAB (54px, Akzent) öffnet das „Erstellen“-Sheet.</p>
+
+        <h3>Routing-Modell</h3>
+        <ul>
+          <li><b>Tabs:</b> <code>home · projekte · analytics · profil</code>.</li>
+          <li><b>Projekt-Stack:</b> innerhalb von <em>Projekte</em> und <em>Profil</em> ein Push-/Pop-Stack (z. B. <code>planer → planerPost</code>, <code>pmProject → pmTask</code>). Ein Verlaufs-Stack sorgt dafür, dass „Zurück“ immer genau eine Ebene zurückführt.</li>
+          <li><b>Sheets:</b> overlay-basiert, unabhängig vom Tab (Liste in Kap. 9).</li>
+        </ul>
+
+        <h3>Tweaks-Panel</h3>
+        <p>Über die Toolbar zuschaltbar. Standardmäßig zwei Tweaks: <b>Akzent</b> (Farb-Swatches inkl. der vier Paletten) und <b>Ecken</b> (<code>soft/standard/sharp</code>). Defaults: <code>accent:["#cdf24d","#161a07"]</code>, <code>corners:"standard"</code>.</p>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 9: SCREENS -->
+      <section>
+        <span class="sec-no">Kapitel 9 · Seiten</span>
+        <h2>Seiten im Detail</h2>
+        <p class="lead">Jede Seite folgt dem System aus Kap. 6–8: Screen-Eintritt, gestaffelte Reveals, einheitliche Karten. Nachfolgend Layout, Inhalt, Interaktion und Besonderheiten je Seite.</p>
+
+        <!-- DASHBOARD -->
+        <div class="screen-block" id="s-dashboard">
+          <h3>Startseite / Dashboard <span class="badge tab">Tab: home</span></h3>
+          <p>Persönlicher Überblick. Datei <code>dashboard.jsx</code>.</p>
+          <div class="kv">
+            <dt>Aufbau</dt><dd>1) KPI-Leiste (4 <code>.dash-chip</code>: Reichweite, Engagement, Follower, Conversions) · 2) Fokus-Karte „Reichweite“ mit Count-up-Wert, Sparkline (h=64) und Kanal-Split-Balken + Legende · 3) Aktive Kampagnen (Ring + Status + KPI) · 4) Branchen-News-Sektion · 5) „Als Nächstes geplant“ (Liste) · 6) Aufgaben- + Team-Quickcards · 7) Asset-Bibliothek-Shortcut.</dd>
+            <dt>Animation</dt><dd>Reveals gestaffelt: Leiste <code>40ms</code>, Fokus <code>130ms</code>, Kampagnen <code>i·90ms</code> (von links), Quickcards links/rechts. Count-up auf allen Zahlen.</dd>
+            <dt>Interaktion</dt><dd>Kampagne → <code>campaign</code>-Sheet; „Alle“ → Kampagnenmanager; News → <code>newsDetail</code>; Karten öffnen Tasks/Team/Assets-Sheets.</dd>
+          </div>
+        </div>
+
+        <!-- PROJEKTE HUB -->
+        <div class="screen-block" id="s-projekte">
+          <h3>Projekte-Hub <span class="badge tab">Tab: projekte (Root)</span></h3>
+          <p>Einstieg in die vier Arbeitsbereiche. Datei <code>projekte-hub.jsx</code>.</p>
+          <div class="kv">
+            <dt>Aufbau</dt><dd>1) KPI-Zeile in 3 Gruppen (Kampagnen live · Social: geplant + Freigaben · Nächstes Projekt mit Fortschrittsbalken) — alle als Akzent-Kacheln (weißer Text) und klickbar. 2) „Bereiche“: Jahresplan, Social-Media-Planer, Kampagnenmanager, Projektmanager (Karten mit Icon, Stat &amp; Extra). 3) „Zuletzt bearbeitet“.</dd>
+            <dt>Interaktion</dt><dd>Bereichskarte → <code>go('projekte', key)</code> öffnet den jeweiligen Sub-Screen.</dd>
+          </div>
+        </div>
+
+        <!-- JAHRESPLAN -->
+        <div class="screen-block" id="s-jahresplan">
+          <h3>Jahresplan <span class="badge sub">planer-Bereich</span></h3>
+          <p>Themenplanung Jan–Dez für das Fachgeschäft. Dateien <code>jahresplan.jsx</code> + <code>jahresplan.css</code>.</p>
+          <div class="kv">
+            <dt>Übersicht</dt><dd>Jahresbalken „2026“ + 12 Monatszeilen. Jede Zeile: Schiene mit Monatskürzel, Quartal und ggf. „JETZT“-Marke; rechts Leitmotiv + Themen-Chips (farbkodiert nach Kategorie) + Themenzahl. <b>Auto-Scroll</b> zum aktuellen Monat beim Öffnen.</dd>
+            <dt>Kategorien</dt><dd>Verkauf <span class="sw" style="background:#ee7203"></span>, Werkstatt <span class="sw" style="background:#3f9bff"></span>, Vermietung <span class="sw" style="background:#3fe0d0"></span>, Saison <span class="sw" style="background:#5fb85f"></span>, Frist <span class="sw" style="background:#e8654f"></span></dd>
+            <dt>Monats-Detail</dt><dd>Hero (großes Monatskürzel + Leitmotiv + Q/Themen/Kanäle). Themen nach Geschäftsbereich gruppiert; je Thema Titel, Beschreibung und Kanal-Chips (Social/Ads/Newsletter/Flyer). Abschnitt „Verzahnung“ (Rück-/Vorverweise auf andere Monate) und „Thema hinzufügen“.</dd>
+          </div>
+        </div>
+
+        <!-- PLANER -->
+        <div class="screen-block" id="s-planer">
+          <h3>Social-Media-Planer <span class="badge sub">planer-Bereich</span></h3>
+          <p>Vereint Übersicht, Kalender und Timeline — nur Instagram + Facebook (Meta-API). Datei <code>planer.jsx</code>.</p>
+          <div class="kv">
+            <dt>Umschalter</dt><dd><code>.smp-switch</code>: <b>Übersicht · Kalender · Timeline</b>. Ansichtswechsel mit <code>smpViewIn</code> (0.3s <code>translateY(6px)→0</code>). Ansichtsstatus überlebt Navigation (<code>PL_STATE</code>).</dd>
+            <dt>Übersicht</dt><dd>Pipeline-Funnel (Entwurf→Freigabe→Geplant→Live, Freigabe-Segment hebt sich als Akzent hervor), Freigabe-Banner, CTAs „Neuer Post / KI-Content“, „Heute“-Liste, „Nächste Veröffentlichungen“.</dd>
+            <dt>Kalender</dt><dd>Wochenstreifen (KW 24, 8.–14. Juni) mit Kanal-Punkten je Tag; ausgewählter Tag listet seine Posts; Sprung zum Tagesplan.</dd>
+            <dt>Timeline</dt><dd>Status-Filter-Chips + Gruppen (Heute / Diese Woche / Entwürfe / Veröffentlicht).</dd>
+            <dt>Post-Zeile</dt><dd><code>.smp-row</code>: Uhrzeit, Kanal-Badge, Titel, Status-Pille + Autor + KI-Tag; rechts „prüfen“ (Freigabe), ⚡ (Auto-Post) oder Chevron.</dd>
+            <dt>Unterseiten</dt><dd><b>Post-Detail</b> (Vorschau-Platzhalter, editierbare Caption, KI-Chips, Termin + Auto-Post-Toggle, statusabhängige Aktionen) · <b>Freigabe</b> (Zähler-Hero, Auto-Post-Schalter, Prüf-Karten mit Ablehnen/Freigeben) · <b>Tagesplan</b> (Tages-Hero, Postliste, KI-Tipp-Karte). Status-Mutationen wirken direkt auf die geteilten Daten und bleiben erhalten.</dd>
+          </div>
+        </div>
+
+        <!-- KAMPAGNEN -->
+        <div class="screen-block" id="s-kampagnen">
+          <h3>Kampagnenmanager <span class="badge sub">kampagnen-Bereich</span></h3>
+          <p>Kampagne → Maßnahmen → Rabattaktionen. Datei <code>kampagnen.jsx</code>.</p>
+          <div class="kv">
+            <dt>Ansichten</dt><dd><code>.seg</code>: <b>Liste · Timeline · Baum</b>.</dd>
+            <dt>Liste</dt><dd>Budget-Gesamt-Ring + Kampagnenkarten (Status, Zeitraum, Kanäle, Maßnahmen-/Rabatt-Zähler, Budget-Balken in Kampagnenfarbe).</dd>
+            <dt>Timeline</dt><dd>Monatsachse Mai–Okt; Kampagnen-Balken (voll deckend) + Maßnahmen-Balken (40 % Opazität) positioniert über <code>KM_TL</code>.</dd>
+            <dt>Baum</dt><dd>Hierarchie mit ASCII-Konnektoren (├ └ •): Kampagne → Maßnahme → Rabatt (mit Wert-Badge + Code).</dd>
+            <dt>Drill</dt><dd>Maßnahmen-View (Feature-Hero + aufklappbare Maßnahmen mit Fortschritt &amp; Rabattliste) → Rabatt-View (Wert-Badge, Code, Einlösungs-Balken; bei &gt;80 % in Warnfarbe).</dd>
+          </div>
+        </div>
+
+        <!-- PROJEKTMANAGER -->
+        <div class="screen-block" id="s-pm">
+          <h3>Projektmanager <span class="badge sub">projektmanager-Bereich</span></h3>
+          <p>Klassisches Projekt-/Aufgaben-Management mit Phasen. Datei <code>projektmanager.jsx</code>.</p>
+          <div class="kv">
+            <dt>Übersicht</dt><dd>3 KPIs (aktiv / Ø Fortschritt / bald fällig) + Projektkarten (Fortschritts-Ring, Aufgabenzähler, Team-Stack, Fälligkeits-Pille — „bald fällig“ in Warnfarbe).</dd>
+            <dt>Projekt-Detail</dt><dd>Bearbeiten-Pille (toggelt Edit-Modus), ausklappbare Beschreibung, großer Fortschritts-Ring, Verantwortlich + Budget, Aufgaben gruppierbar nach <b>Phase / Mitglied / Fälligkeit</b>. Abhaken: erledigte Aufgaben bleiben durchgestrichen an Ort &amp; Stelle; Wieder-Öffnen verlangt eine Bestätigung (Modal).</dd>
+            <dt>Aufgaben-Detail</dt><dd>Titel, Beschreibung, Status-Karte (erledigt = grüne Karte mit Zeitstempel), Fällig/Phase, Priorität-Auswahl, verknüpfte Mitglieder (hinzufügbar) und Links. Alles im Edit-Modus inline editierbar.</dd>
+            <dt>Bestätigungs-Modal</dt><dd><code>PmConfirm</code>: fixes Overlay (<code>rgba(0,0,0,.55)</code> + Blur), zentrierte Karte, Abbrechen/Bestätigen.</dd>
+          </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="screen-block" id="s-analytics">
+          <h3>Analytics <span class="badge tab">Tab: analytics</span></h3>
+          <p>Auswertung Gesamt / Google / Meta (Daten „via API“). Datei <code>analytics.jsx</code>.</p>
+          <div class="kv">
+            <dt>Quellen-Segment</dt><dd>Gesamt / Google / Meta — bei Google/Meta färbt sich der aktive Button in der Quellfarbe (<code>#4285F4</code> / <code>#0866FF</code>).</dd>
+            <dt>Aufbau</dt><dd>Hero-Karte (Label + großer Wert + Delta + große Sparkline in Quellfarbe). KPI-Raster (4 Kacheln, Reveal links/rechts). Quellabhängige Blöcke: Gesamt → „Conversions nach Quelle“ + Top-Beiträge; Google → Top-Kampagnen; Meta → Kanal-Split + Top-Beiträge.</dd>
+          </div>
+        </div>
+
+        <!-- PROFIL -->
+        <div class="screen-block" id="s-profil">
+          <h3>Profil, Meine Aufgaben &amp; Arbeitszeit <span class="badge tab">Tab: profil</span></h3>
+          <p>Datei <code>sheets-hub.jsx</code> (ProfileScreen) + <code>aufgaben.jsx</code>.</p>
+          <div class="kv">
+            <dt>Profil-Screen</dt><dd>Avatar 88px, Name „Robin Berger“, Owner-Chip, Kontakt (Mono). „Meine Aufgaben“ als Akzent-Hero (offene Zahl groß + heute/Woche). Arbeitszeit-Karte (Wochen-Ring + Balken + Stempel-Status). Einstellungsliste (u. a. „Darstellung“ → Sheet). Abmelden + Version.</dd>
+            <dt>Meine Aufgaben</dt><dd>3 KPIs (offen/heute/Woche), Wochenkalender (KW 23) mit Prioritäts-Punkten, Tagesliste, „Als Nächstes“. Aufgabenzeile mit farbiger Prio-Kante + Rolle-Pille (Verantwortlich/Mitwirkend). Tap öffnet <code>aufgabe</code>-Sheet.</dd>
+            <dt>Arbeitszeit (Sheet)</dt><dd>Live-Timer (rAF, <code>HH:MM:SS</code>) mit Zustandsmaschine <em>aus → ein → Pause → ein → aus</em>; Status-Punkt wechselt Farbe. Monats-Ring + Salden (Urlaub/Krank/Feiertage) + Wochen-Balken + Tagesliste. Auf iPad öffnet dieses Sheet als echtes Vollbild.</dd>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 10 SHEETS -->
+      <section id="sheets">
+        <span class="sec-no">Kapitel 10</span>
+        <h2>Bottom-Sheets</h2>
+        <p class="lead">Alle modalen Fenster nutzen die gemeinsame <code>Sheet</code>-Hülle (<code>sheets-create.jsx</code>): Scrim + abgerundetes Blatt (oben 28px), Greif-Indikator, Kopf (Titel + ✕) und scrollbarer Body; optionaler Fuß (sticky, abgesetzt). Varianten: <code>full</code> (92 % Höhe), <code>sheet-search</code>, <code>sheet-ai</code>, <code>sheet-worktime</code>.</p>
+        <table>
+          <tr><th>Sheet</th><th>Inhalt</th></tr>
+          <tr><td><b>Erstellen</b> <span class="badge sheet">create</span></td><td>Auswahl-Raster Beitrag/Story/Reel/Kampagne + Zeile „Aufgabe“. Öffnet jeweils Compose mit Typ.</td></tr>
+          <tr><td><b>Compose</b> <span class="badge sheet">compose</span></td><td>Kanal-Chips, Text + „KI-Vorschlag“, Medien-Slots (Platzhalter), Planung (Datum/Uhrzeit), Veröffentlichungs-Hinweis. Fuß: Entwurf / „Für … planen“.</td></tr>
+          <tr><td><b>Kampagne</b> <span class="badge sheet">campaign</span></td><td>Status, Name, Kanäle, KPI-Kacheln, Budget-Balken, Team-Stack, Bearbeiten/Bericht.</td></tr>
+          <tr><td><b>Beitrag</b> <span class="badge sheet">post</span></td><td>Kanal, Termin, Visual-Platzhalter, Caption-Vorschau, Bearbeiten/Freigeben.</td></tr>
+          <tr><td><b>Suche</b> <span class="badge sheet">search</span></td><td>Volltextsuche über Kampagnen, Beiträge, Aufgaben, Assets, Team, News. Auto-Fokus nach 360ms; gruppierte Treffer; Spring-Slide-up.</td></tr>
+          <tr><td><b>Mitteilungen</b> <span class="badge sheet">alerts</span></td><td>Tabs „Benachrichtigungen“ + „News“. Benachrichtigungen mit ungelesen-Markierung (Akzent-Rand) + „Alle als gelesen“.</td></tr>
+          <tr><td><b>News-Detail</b> <span class="badge sheet">newsDetail</span></td><td>Kategorie-Bild, Titel, Quelle, Lead, „Warum das zählt“-Karte (Kategorie-getönt), ähnliche Beiträge. Fuß: Merken / Zur Quelle.</td></tr>
+          <tr><td><b>Aufgaben</b> <span class="badge sheet">tasks</span></td><td>Filter Offen/Erledigt/Alle, abhakbare Karten (Checkbox füllt sich mit Akzent), Prio-Punkt + Tag + Fälligkeit.</td></tr>
+          <tr><td><b>Team</b> <span class="badge sheet">team</span></td><td>Mitgliederkarten mit Avatar, Rolle, Aktivität.</td></tr>
+          <tr><td><b>Assets</b> <span class="badge sheet">assets</span></td><td>Typ-Filter + 2-Spalten-Raster aus gestreiften Platzhaltern mit Typ-Badge &amp; Kanal-Marke.</td></tr>
+          <tr><td><b>Aufgabe</b> <span class="badge sheet">aufgabe</span></td><td>Status + Rolle, Titel, Deadline-Karte, Meta-Liste, Beteiligte, Checkliste, Notiz.</td></tr>
+          <tr><td><b>Profil bearbeiten</b> <span class="badge sheet">profileEdit</span></td><td>Foto, Name/Telefon/E-Mail, gesperrtes Rollenfeld (Admin-vergeben).</td></tr>
+          <tr><td><b>Darstellung</b> <span class="badge sheet">darstellung</span></td><td>Modus (Weiß/Grau/Schwarz) + Akzent (Grün/Orange/Eigene mit Color-Picker). Wirkt sofort app-weit.</td></tr>
+        </table>
+        <div class="note">Die Platzhalter für Bilder/Videos sind bewusst gestreift (<code>.ph</code>: 135°-Streifenmuster) mit Mono-Tag — Vorgabe, wo echte Medien einzusetzen sind.</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 11 KI -->
+      <section id="ki">
+        <span class="sec-no">Kapitel 11</span>
+        <h2>KI-Assistent</h2>
+        <p class="lead">Drei Darstellungen derselben Chat-Logik (<code>ai-assistant.jsx</code>, Hook <code>useAIChat</code>): FAB-Launcher + Bottom-Sheet (Handy) und gedocktes/schwebendes Panel (iPad).</p>
+        <div class="kv">
+          <dt>FAB</dt><dd>56px, abgerundetes Quadrat, Akzent-Rand, Backdrop-Blur, „KI“-Badge, Bot-Icon, Dauerpuls (<code>aiPulse</code>). Beim Nav-Collapse dockt er federnd als 42px-Quadrat neben die Leiste.</dd>
+          <dt>Chat-Logik</dt><dd>Begrüßung + Schnell-Prompts (verschwinden nach erster Eingabe). Antworten kommen aus einem Regel-„Brain“ (<code>aiReply</code>, Keyword-Matching) mit simuliertem Tippen (850–1350ms) und Markdown-Fettung.</dd>
+          <dt>Bubbles</dt><dd>KI-Bubble = <code>--surface</code> + Bot-Avatar; eigene Nachricht = Akzent-Fläche, rechtsbündig. Eintritt <code>msgIn</code>, Tipp-Indikator <code>aiBlink</code>.</dd>
+          <dt>iPad-Dock</dt><dd>Volle Spaltenhöhe, Kopf mit „Online“-Status, eigener Fuß-Composer. Ein-/Ausklappen über Griff-Lasche „KI“ am rechten Rand (siehe Kap. 12).</dd>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 12 iPad -->
+      <section id="ipad">
+        <span class="sec-no">Kapitel 12</span>
+        <h2>iPad-Querformat</h2>
+        <p class="lead">Gleiche App, andere Raumaufteilung. Klasse <code>.ipad-land</code> auf dem Screen-Container.</p>
+        <ul>
+          <li><b>Spaltenlayout:</b> App nimmt links ~70 %, das KI-Panel schwebt rechts (~30 %). <code>.app{right:30%}</code>, eingeklappt <code>right:0</code>; Übergang 0.44s <code>cubic-bezier(.4,0,.2,1)</code>.</li>
+          <li><b>KI-Panel:</b> <code>.ai-float</code> rundum abgesetzt, eigener Rahmen + großer Schatten. Eingeklappt gleitet es nach rechts raus (<code>translateX(130%)</code> + Fade); eine vertikale Griff-Lasche „KI“ (Akzent) holt es zurück.</li>
+          <li><b>KPI-Raster</b> 4-spaltig, Werte größer (Fokus-Wert 40px, Chips 21px).</li>
+          <li><b>Sheets</b> zentriert (max 720px, <code>translateX(-50%)</code>) und steigen mittig mit sanfter Skalierung hoch (<code>sheetUpPad</code>) — kein seitlicher Sprung. Das Arbeitszeit-Sheet öffnet als <b>echtes Vollbild</b> (<code>sheetUpFull</code>), zieht die App auf volle Breite und blendet das KI-Panel aus.</li>
+          <li><b>Statusbar</b>-Attrappe oben (9:41 + WLAN/Akku-Glyphen).</li>
+          <li>Darstellungs-Änderungen synchronisieren über das Event <code>ghub:appearance</code> alle Instanzen (iPhone + iPad-Dock); kurzes Aussetzen der Transitions (<code>.no-anim</code>) verhindert Farb-Artefakte beim Theme-Wechsel.</li>
+        </ul>
+        <div class="note"><b>Dev-Tool:</b> Der Geräte-Frame enthält eine schwebende, frei verschiebbare Dev-Schaltfläche (Position in <code>localStorage</code>) mit Aktionen: Geräte neu starten, Ladescreen abspielen, Hell/Dunkel, Akzent wechseln, Seite neu laden. Nur für die Vorschau, nicht Teil des Produkts.</div>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== 13 DATEN -->
+      <section id="daten">
+        <span class="sec-no">Kapitel 13</span>
+        <h2>Datenmodell</h2>
+        <p class="lead">Alle Inhalte stammen aus <code>window.DATA</code> (<code>data.js</code>). Für den Nachbau 1:1 übernehmbar. Wichtigste Sammlungen:</p>
+        <table>
+          <tr><th>Schlüssel</th><th>Inhalt</th></tr>
+          <tr><td class="mono">channels</td><td>6 Kanäle (Name, Kürzel, Farbvariable)</td></tr>
+          <tr><td class="mono">team</td><td>5 Mitglieder (Initialen, Verlauf, Rolle); „me“ = Robin/Owner</td></tr>
+          <tr><td class="mono">kpis</td><td>4 KPIs mit Wert, Delta, Spark-Reihe</td></tr>
+          <tr><td class="mono">campaigns</td><td>4 Kampagnen → Maßnahmen → Rabattaktionen (Budget, Status, Kanäle)</td></tr>
+          <tr><td class="mono">planerPosts</td><td>9 Social-Posts (Kanal, Tag, Uhrzeit, Status, KI, Auto-Post, Autor, Caption)</td></tr>
+          <tr><td class="mono">ana</td><td>Analytics Gesamt/Google/Meta (Serien, KPIs, Splits)</td></tr>
+          <tr><td class="mono">myTasks / tasks</td><td>persönliche Aufgaben &amp; Team-To-dos (Prio, Datum, Rolle, Beteiligte)</td></tr>
+          <tr><td class="mono">news</td><td>Branchen-News (Highlight + Liste, Kategorien Trend/Plattform/Mention)</td></tr>
+          <tr><td class="mono">worktime</td><td>Arbeitszeit (Woche, Monat, Salden, Stempel-Status)</td></tr>
+          <tr><td class="mono">content / assets / inbox</td><td>Kalender-Content, Asset-Bibliothek, Benachrichtigungen</td></tr>
+        </table>
+        <p>Der Jahresplan hat eigene Daten in <code>jahresplan.jsx</code> (<code>JP_MONTHS</code>), der Projektmanager in <code>projektmanager.jsx</code> (<code>PM_PROJECTS</code>). Version: <code>window.GHUB_VERSION = 'Version 2.6.0'</code>.</p>
+      </section>
+
+      <hr>
+
+      <!-- =================================================== ANHANG -->
+      <section id="dateien">
+        <span class="sec-no">Anhang</span>
+        <h2>Beiliegende Quelldateien</h2>
+        <p class="lead">Im Ordner <code>quelldateien/</code> liegen die zentralen, direkt nachnutzbaren Originaldateien:</p>
+        <table>
+          <tr><th>Datei</th><th>Zweck</th></tr>
+          <tr><td><b>gerberhub-loader.js</b> <span class="badge file">Ladeanimation</span></td><td>Komplette Splash-Animation als Web-Component — einsatzbereit, ohne Abhängigkeiten (siehe Kap. 5).</td></tr>
+          <tr><td><b>appearance.js</b></td><td>Alle Theme- &amp; Akzent-Tokens + Anwendungs-Logik (3 Themes, 2 Akzente, frei wählbar).</td></tr>
+          <tr><td><b>styles.css</b></td><td>Design-Tokens + sämtliche Komponenten-Styles (Referenz für alle Maße/Animationen).</td></tr>
+          <tr><td><b>jahresplan.css</b></td><td>Zusatz-Styles für den Jahresplan-Bereich.</td></tr>
+          <tr><td><b>icons.jsx</b></td><td>Vollständiges Line-Icon-Set.</td></tr>
+          <tr><td><b>data.js</b></td><td>Alle Inhalte/Mock-Daten — als Ausgangspunkt für eigene Inhalte.</td></tr>
+        </table>
+        <div class="note green">Mit diesem Dokument (visuelles System, Maße, Timing) + den beiliegenden Dateien (Tokens, Loader, Styles, Daten) lässt sich G-Hub vollständig und bewegungsgetreu nachbauen. Für die exakte JSX-Logik einzelner Screens dienen die gleichnamigen <code>app/*.jsx</code>-Dateien des Projekts als verbindliche Referenz.</div>
+      </section>
+
+    </div><!-- /.col -->
+
+    <div class="footer">
+      G-HUB · MARKETING-HUB — Design- &amp; Animations-Dokumentation · Version 2.6.0 · Stand Juni 2026 · Sprache: Deutsch
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Live-Ladeanimation in der Doku
+  (function(){
+    var stage = document.getElementById('loaderStage');
+    var bg = '#101217';
+    function mount(){
+      if(!stage) return;
+      stage.innerHTML = '';
+      var el = document.createElement('gerber-hub-loader');
+      el.setAttribute('min-visible','100000');   // bleibt sichtbar (Demo)
+      el.setAttribute('speed','0.85');
+      el.setAttribute('bg', bg);
+      el.setAttribute('accent','#ee7203');
+      el.setAttribute('version','Version 2.6.0');
+      el.style.cssText = 'position:absolute; inset:0;';
+      stage.appendChild(el);
+    }
+    function ready(fn){ if(window.customElements && customElements.get('gerber-hub-loader')) fn(); else setTimeout(function(){ready(fn);}, 60); }
+    ready(mount);
+    var rb = document.getElementById('replayBtn');
+    rb && rb.addEventListener('click', function(){ var el = stage.querySelector('gerber-hub-loader'); if(el && el.replay) el.replay(); else mount(); });
+    var db = document.getElementById('darkBtn');
+    db && db.addEventListener('click', function(){ bg = '#101217'; mount(); });
+    var lb = document.getElementById('lightBtn');
+    lb && lb.addEventListener('click', function(){ bg = '#f4f3f0'; mount(); });
+  })();
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import { NAV, PROJ_SUB, headFor } from './nav';
 import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
+import { MobileNav } from './MobileNav';
 import { AIDock } from '../features/ai/AIAssistant';
 import { INBOX, NEWS } from '../lib/mockData';
 
@@ -36,30 +37,6 @@ function ThemeGlyph({ light }: { light: boolean }): React.JSX.Element {
       )}
     </svg>
   );
-}
-
-/**
- * KI „Spark-Slide" (Design-Doku Kap. 6): beim Öffnen des KI-Assistenten zündet am
- * FAB ein kurzer Funken-Burst (WAAPI), danach gleitet das Sheet hoch (CSS `sheet-ai`).
- * Erzeugt ein transientes Element über dem FAB und entfernt es nach der Animation.
- */
-function fireSpark(anchor: HTMLElement): void {
-  if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const r = anchor.getBoundingClientRect();
-  const s = document.createElement('div');
-  s.style.cssText =
-    `position:fixed; left:${r.left + r.width / 2}px; top:${r.top + r.height / 2}px;` +
-    `width:${r.width}px; height:${r.height}px; transform:translate(-50%,-50%);` +
-    'border-radius:16px; background:var(--accent); pointer-events:none; z-index:70;';
-  document.body.appendChild(s);
-  const anim = s.animate(
-    [
-      { opacity: 1, transform: 'translate(-50%,-50%) scale(.3)', boxShadow: '0 0 0 0 var(--accent-glow)' },
-      { opacity: 0, transform: 'translate(-50%,-50%) scale(2.8)', boxShadow: '0 0 0 30px transparent' },
-    ],
-    { duration: 460, easing: 'cubic-bezier(.2,.7,.3,1)' },
-  );
-  anim.onfinish = (): void => s.remove();
 }
 
 /**
@@ -240,51 +217,8 @@ export function AppShell(): React.JSX.Element {
         </button>
       )}
 
-      {/* ---------- Handy-Shell: Liquid-Glass-Nav + zentraler FAB + KI-FAB ---------- */}
-      <div className={'shell-phone' + (navCollapsed ? ' nav-collapsed' : '')}>
-        <nav className={'nav' + (navCollapsed ? ' nav-collapsed' : '')} aria-label="Hauptnavigation">
-          <div className="nav-wrap">
-            {NAV.slice(0, 2).map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.to === '/'}
-                className={({ isActive }) => 'nav-item' + (isActive ? ' on' : '')}
-              >
-                <Icon name={n.icon} size={22} />
-                <span className="nav-label">{n.label}</span>
-              </NavLink>
-            ))}
-            <div className="nav-fab-slot">
-              <button className="nav-fab" onClick={() => open('create')} aria-label="Erstellen">
-                <Icon name="plus" size={24} stroke={2.3} />
-              </button>
-            </div>
-            {NAV.slice(2).map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.to === '/'}
-                className={({ isActive }) => 'nav-item' + (isActive ? ' on' : '')}
-              >
-                <Icon name={n.icon} size={22} />
-                <span className="nav-label">{n.label}</span>
-              </NavLink>
-            ))}
-          </div>
-        </nav>
-        <button
-          className="ai-fab"
-          onClick={(e) => {
-            fireSpark(e.currentTarget);
-            open('ai');
-          }}
-          aria-label="KI-Assistent öffnen"
-        >
-          <span className="ai-fab-badge">KI</span>
-          <span className="ai-fab-spark"><Icon name="bot" size={26} stroke={1.8} /></span>
-        </button>
-      </div>
+      {/* ---------- Handy: dedizierte mobile Bottom-Nav (eigene mnav-* Klassen) ---------- */}
+      <MobileNav collapsed={navCollapsed} />
     </div>
   );
 }

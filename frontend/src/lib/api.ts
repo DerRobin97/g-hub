@@ -43,6 +43,10 @@ export function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
 }
 
+export function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  return request<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined });
+}
+
 // --- Health ---
 export interface HealthResponse {
   status: string;
@@ -111,4 +115,18 @@ export function logout(): Promise<{ status: string }> {
 /** Vollständige URL für den serverseitigen Google-Login-Start. */
 export function googleConnectUrl(): string {
   return `${BASE_URL}/auth/google/connect`;
+}
+
+// --- Darstellung / Appearance (Bauplan §6.4) ---
+/** Teil-Update der Darstellungs-Einstellungen; alle Felder optional. */
+export type AppearanceUpdate = Partial<Omit<AppearancePref, 'customAccent'>> & {
+  customAccent?: string | null;
+};
+
+export function getAppearance(): Promise<AppearancePref> {
+  return apiGet<AppearancePref>('/me/appearance');
+}
+
+export function updateAppearance(patch: AppearanceUpdate): Promise<AppearancePref> {
+  return apiPut<AppearancePref>('/me/appearance', patch);
 }

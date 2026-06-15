@@ -6,8 +6,20 @@
 
 export type Theme = 'light' | 'gray' | 'dark';
 export type AccentSelection = 'gruen' | 'orange' | 'custom';
+export type Corners = 'soft' | 'standard' | 'sharp';
 
 type ThemeVarMap = Record<string, string>;
+
+// Eck-Rundungen je Variante (migriert aus `app/main.jsx` CORNER_MAP).
+export const CORNER_MAP: Record<Corners, { lg: string; md: string; sm: string }> = {
+  soft: { lg: '30px', md: '24px', sm: '16px' },
+  standard: { lg: '26px', md: '20px', sm: '14px' },
+  sharp: { lg: '16px', md: '12px', sm: '9px' },
+};
+
+export function cornerVars(corners: Corners): { lg: string; md: string; sm: string } {
+  return CORNER_MAP[corners] || CORNER_MAP.standard;
+}
 
 // Vollständige Variablen-Sätze je Theme — werden inline auf den App-Host gesetzt.
 export const THEME_VARS: Record<Theme, ThemeVarMap> = {

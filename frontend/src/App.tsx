@@ -1,20 +1,19 @@
-import { useEffect, useState } from 'react';
-import { applyTo, type Theme } from './lib/appearance';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { AuthScreen } from './auth/AuthScreen';
-import { AuthedHome } from './auth/AuthedHome';
+import { AppShell } from './app/AppShell';
+import { DashboardPage } from './pages/DashboardPage';
+import { ProjektePage } from './pages/ProjektePage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { ProfilPage } from './pages/ProfilPage';
 
 /**
- * Auth-Gate: lädt die Sitzung, zeigt dann entweder Login/Register
- * oder die eingeloggte Ansicht. Das Theme wird global angewendet.
+ * Auth-Gate + Routing: lädt die Sitzung, zeigt dann entweder den Login
+ * oder die App-Shell mit den gerouteten Seiten. Theme/Akzent werden global
+ * vom AppearanceProvider angewendet.
  */
 export function App(): React.JSX.Element {
   const { user, loading } = useAuth();
-  const [theme, setTheme] = useState<Theme>('dark');
-
-  useEffect(() => {
-    applyTo(document.documentElement, theme, 'gruen');
-  }, [theme]);
 
   if (loading) {
     return (
@@ -24,5 +23,18 @@ export function App(): React.JSX.Element {
     );
   }
 
-  return user ? <AuthedHome theme={theme} onTheme={setTheme} /> : <AuthScreen />;
+  if (!user) return <AuthScreen />;
+
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="projekte" element={<ProjektePage />} />
+        <Route path="projekte/:area" element={<ProjektePage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="profil" element={<ProfilPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
 }

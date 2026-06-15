@@ -37,3 +37,19 @@ export type TaskPriority = (typeof TASK_PRIORITY)[number];
 // --- Analytics-Quellen — Bauplan §4.10 ---
 export const METRIC_SOURCES = ['gesamt', 'google', 'meta'] as const;
 export type MetricSource = (typeof METRIC_SOURCES)[number];
+
+// --- Darstellung / Appearance — Bauplan §4.1 / §6.4 ---
+export const THEMES = ['light', 'gray', 'dark'] as const;
+export type ThemeName = (typeof THEMES)[number];
+
+// Benannte Akzente + frei wählbare Farbe ('custom').
+export const ACCENT_OPTIONS = ['gruen', 'orange', 'custom'] as const;
+export type AccentOption = (typeof ACCENT_OPTIONS)[number];
+
+// Desktop-Layout-Varianten der Web-Shell.
+export const WEB_LAYOUTS = ['full', 'rail', 'dual'] as const;
+export type WebLayout = (typeof WEB_LAYOUTS)[number];
+
+// Eck-Rundungen der Oberfläche.
+export const CORNER_STYLES = ['soft', 'standard', 'sharp'] as const;
+export type CornerStyle = (typeof CORNER_STYLES)[number];

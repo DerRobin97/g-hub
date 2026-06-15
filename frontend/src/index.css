@@ -1,8 +1,8 @@
-/* Basis-Design aus dem Prototyp (Bauplan §0.1). Reihenfolge: globale styles, dann web. */
+/* Basis-Design aus dem Prototyp (Bauplan §0.1). Reihenfolge: globale styles, web, dann Shell. */
 @import './styles/styles.css';
 @import './styles/web.css';
+@import './styles/shell.css';
 
-/* Minimaler App-Host bis die echte Shell migriert ist. */
 html,
 body,
 #root {

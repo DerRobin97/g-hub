@@ -6,7 +6,6 @@ import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
 import { MobileNav } from './MobileNav';
-import { SafeAreaDebug } from './SafeAreaDebug';
 import { AIDock } from '../features/ai/AIAssistant';
 import { listNews } from '../lib/api';
 import { INBOX } from '../lib/mockData';
@@ -230,9 +229,6 @@ export function AppShell(): React.JSX.Element {
 
       {/* ---------- Handy: dedizierte mobile Bottom-Nav (eigene mnav-* Klassen) ---------- */}
       <MobileNav collapsed={navCollapsed} />
-
-      {/* TEMP: Diagnose Safe-Area/Standalone (wird wieder entfernt) */}
-      <SafeAreaDebug />
     </div>
   );
 }

@@ -326,6 +326,19 @@ export interface UploadUrlDto {
   uploadUrl: string;
 }
 
+// --- KI-Assistent (Claude/Anthropic) ---
+export const AI_ROLES = ['user', 'assistant'] as const;
+export type AiRole = (typeof AI_ROLES)[number];
+
+export interface AiChatMessage {
+  role: AiRole;
+  content: string;
+}
+
+export interface AiChatResponse {
+  reply: string;
+}
+
 // --- Branchen-News & Trends (Dashboard/News-Sektion) ---
 // Kategorie = Anzeige-Label wie im Prototyp (UI-Filter „Trend/Plattform/Mention").
 export const NEWS_CATEGORIES = ['Trend', 'Plattform', 'Mention'] as const;

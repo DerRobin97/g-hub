@@ -30,6 +30,8 @@ import type {
   AssetKind,
   UploadUrlDto,
   NewsDto,
+  AiChatMessage,
+  AiChatResponse,
   SearchResultsDto,
 } from '@g-hub/shared';
 
@@ -557,6 +559,14 @@ export function markNewsRead(id: string): Promise<NewsDto> {
 /** Alle News-Beiträge als gelesen markieren. */
 export function markAllNewsRead(): Promise<{ status: string }> {
   return apiPost<{ status: string }>('/news/read-all');
+}
+
+// --- KI-Assistent (Claude/Anthropic über Backend-Proxy) ---
+export type { AiChatMessage, AiChatResponse } from '@g-hub/shared';
+
+/** Schickt den Gesprächsverlauf an den Backend-Proxy → Anthropic. */
+export function aiChat(messages: AiChatMessage[]): Promise<AiChatResponse> {
+  return apiPost<AiChatResponse>('/ai/chat', { messages });
 }
 
 // --- Globale Suche (Bauplan §5.1 / §7) ---

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
+import { aiChat, type AiChatMessage } from '../../lib/api';
 
 /** KI-Assistent (Port `ai-assistant.jsx`): Chat-Logik + Thread + Composer + Dock/FAB/Sheet. */
 const AI_PROMPTS = [
@@ -10,27 +11,6 @@ const AI_PROMPTS = [
   { label: 'Kampagnen-Performance', q: 'Wie lief unsere letzte Kampagne?' },
   { label: 'Post-Idee entwerfen', q: 'Gib mir eine Post-Idee.' },
 ];
-
-function aiReply(text: string): string {
-  const t = text.toLowerCase();
-  if (/aufgabe|to-?do|todo|task|erledig|was muss ich/.test(t))
-    return 'Für **heute** stehen 2 eigene Aufgaben an:\n**14:00** · Reel-Skript Sommer-Launch finalisieren *(hohe Prio)*\n**17:00** · LinkedIn-Captions Korrektur lesen\nIm Team ist außerdem bei **Jonas** die TikTok-Ad-Freigabe offen. Soll ich dir das Reel-Skript als Erstes öffnen?';
-  if (/überblick|tagesüberblick|agenda|tagesplan|mein tag|meinen tag|tag im überblick|zusammenfass|briefing/.test(t))
-    return 'Dein Tag im Überblick:\n• **2 Aufgaben** fällig (1 mit hoher Priorität)\n• **18:00** geht „Produkt-Drop Reveal" automatisch auf Instagram live\n• **4 Beiträge** warten auf deine Freigabe\n• „Sommer-Launch" liegt **+18,4 % über Ziel**\nWomit möchtest du starten?';
-  if (/nächste|naechste|geplant|ansteht|steht an|als nächstes|kommende|demnächst/.test(t))
-    return 'Als Nächstes geplant:\n**Heute 18:00** · Produkt-Drop Reveal (Instagram, Auto-Post)\n**Mi 12:00** · 3 Styling-Tipps Karussell — wartet auf Freigabe\n**Do 09:00** · Event-Reminder „Late-Night-Shopping"\nSoll ich die offene Freigabe für Mittwoch jetzt vorbereiten?';
-  if (/team|wer arbeitet|auslastung|kolleg|verteil|zuständig/.test(t))
-    return 'Gerade aktiv im Team: **Lena** (Reel-Skript), **Jonas** (TikTok-Creatives) und **Mira** (Influencer-Briefing). Lena hat heute die meisten offenen Punkte — soll ich Aufgaben neu verteilen?';
-  if (/instagram|post|idee|caption|text/.test(t))
-    return 'Wie wäre es mit einem **Behind-the-Scenes-Reel** zum Sommer-Launch? Hook: „3 Dinge, die niemand übers Launchen verrät." Carousel-Alternative liegt auch bereit — soll ich einen Entwurf in „Erstellen" anlegen?';
-  if (/zeit|wann|posting|uhr/.test(t))
-    return 'Deine beste Resonanz war zuletzt **Di & Do, 09:00–10:00** sowie **18:30**. Für Instagram empfehle ich diese Woche **Donnerstag 09:00** — da ist deine Zielgruppe am aktivsten.';
-  if (/kampagne|performance|lief|analyse|report/.test(t))
-    return 'Die Kampagne „Sommer-Launch" liegt **+18,4 % über Ziel**: 142K Reach, 4,2 % Engagement, CPC 0,38 €. Stärkster Kanal: LinkedIn. Schwächster: X — dort würde ich das Budget umverteilen.';
-  if (/hashtag|tag/.test(t))
-    return 'Vorschlag für deine Nische:\n**#Sommer2026 · #MarketingHub · #GrowthHacks · #BehindTheScenes · #ContentStrategie**\nMix aus 2 Reichweiten- und 3 Nischen-Tags — das hält die Relevanz hoch.';
-  return 'Verstanden! Ich kann dir bei deinen **Aufgaben** und deinem **Tagesplan** helfen, **Kampagnen analysieren** oder **Content-Ideen** entwerfen. Womit soll ich starten?';
-}
 
 function nowTime(): string {
   return new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -67,15 +47,27 @@ function useAIChat(): AIChat {
 
   const send = (raw?: string): void => {
     const text = (raw ?? draft).trim();
-    if (!text) return;
+    if (!text || typing) return;
     setDraft('');
     setInteracted(true);
-    setMsgs((m) => [...m, { who: 'me', text, t: nowTime() }]);
+    const history = [...msgs, { who: 'me', text, t: nowTime() } as ChatMsg];
+    setMsgs(history);
     setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMsgs((m) => [...m, { who: 'ai', text: aiReply(text), t: nowTime() }]);
-    }, 850 + Math.random() * 500);
+    // Verlauf für die API; führende KI-Begrüßung weglassen (muss mit 'user' starten).
+    const apiMsgs: AiChatMessage[] = history.map((m) => ({
+      role: m.who === 'me' ? 'user' : 'assistant',
+      content: m.text,
+    }));
+    while (apiMsgs.length && apiMsgs[0].role === 'assistant') apiMsgs.shift();
+    aiChat(apiMsgs)
+      .then((res) => setMsgs((m) => [...m, { who: 'ai', text: res.reply, t: nowTime() }]))
+      .catch(() =>
+        setMsgs((m) => [
+          ...m,
+          { who: 'ai', text: 'Entschuldige, die KI ist gerade nicht erreichbar. Bitte versuch es gleich noch einmal.', t: nowTime() },
+        ]),
+      )
+      .finally(() => setTyping(false));
   };
   const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey) {

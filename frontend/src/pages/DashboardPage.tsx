@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_VERSION, type CampaignSummaryDto } from '@g-hub/shared';
-import { getHealth, listCampaigns, type HealthResponse } from '../lib/api';
+import { getHealth, listCampaigns, listProjectMembers, listTasks, type HealthResponse } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import { CountUp, Delta, Ring, SectionHead, Spark, StatusTag, type StatusKey } from '../components/ui';
@@ -49,6 +49,9 @@ export function DashboardPage(): React.JSX.Element {
   const navigate = useNavigate();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [campaigns, setCampaigns] = useState<CampaignSummaryDto[]>([]);
+  // Echte Teil-Zähler (null = noch nicht geladen / nicht verfügbar).
+  const [openTasks, setOpenTasks] = useState<number | null>(null);
+  const [teamCount, setTeamCount] = useState<number | null>(null);
   const workspace = user?.memberships[0];
 
   useEffect(() => {
@@ -58,6 +61,14 @@ export function DashboardPage(): React.JSX.Element {
     listCampaigns()
       .then(setCampaigns)
       .catch(() => setCampaigns([]));
+    // Offene Aufgaben (mir zugewiesen): alles außer „erledigt".
+    listTasks({ assignee: 'me' })
+      .then((tasks) => setOpenTasks(tasks.filter((t) => t.status !== 'erledigt').length))
+      .catch(() => setOpenTasks(null));
+    // Team-Größe: Workspace-Mitglieder.
+    listProjectMembers()
+      .then((members) => setTeamCount(members.length))
+      .catch(() => setTeamCount(null));
   }, []);
 
   // „Aktive Kampagnen": laufende zuerst, sonst die neuesten — auf 3 begrenzt.
@@ -200,10 +211,10 @@ export function DashboardPage(): React.JSX.Element {
           </div>
           <div>
             <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 22 }}>
-              7 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>offen</span>
+              {openTasks ?? '–'} <span style={{ fontSize: 13, color: 'var(--text-3)' }}>offen</span>
             </div>
             <div className="dim" style={{ fontSize: 12.5, marginTop: 2 }}>
-              Aufgaben heute
+              Meine Aufgaben
             </div>
           </div>
         </div>
@@ -213,7 +224,7 @@ export function DashboardPage(): React.JSX.Element {
           </div>
           <div>
             <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 600, fontSize: 22 }}>
-              5 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>aktiv</span>
+              {teamCount ?? '–'} <span style={{ fontSize: 13, color: 'var(--text-3)' }}>aktiv</span>
             </div>
             <div className="dim" style={{ fontSize: 12.5, marginTop: 2 }}>
               Team

@@ -47,7 +47,11 @@ if (BACKEND_ORIGIN) {
 app.use(express.static(distDir, { index: false, maxAge: '1h' }));
 
 // SPA-Fallback: alle übrigen GET-Routen → index.html (Client-Routing).
+// index.html NICHT cachen: sie referenziert die gehashten Assets. Sonst lädt
+// (v. a. die iOS-Homescreen-PWA) nach einem Deploy alte HTML→alte CSS/JS und
+// Änderungen erscheinen scheinbar nicht. Die gehashten Assets bleiben 1h gecacht.
 app.get('*', (_req, res) => {
+  res.set('Cache-Control', 'no-store, must-revalidate');
   res.sendFile(path.join(distDir, 'index.html'));
 });
 

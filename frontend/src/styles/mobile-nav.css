@@ -32,7 +32,7 @@
   z-index: 60;
   /* So weit unten wie möglich: kleiner Festabstand statt der vollen Safe-Area
      (die Home-Indikator-Höhe ist gewollt NICHT freigehalten). */
-  padding: 10px 16px 12px;
+  padding: 8px 16px 8px;
   display: flex;
   align-items: flex-end;
   justify-content: center;

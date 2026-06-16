@@ -30,7 +30,8 @@
   right: 0;
   bottom: 0;
   z-index: 60;
-  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 22px);
+  /* So weit unten wie sinnvoll: nur den Home-Indikator (safe-area) freihalten. */
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 6px);
   display: flex;
   align-items: flex-end;
   justify-content: center;

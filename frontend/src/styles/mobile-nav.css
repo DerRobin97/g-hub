@@ -30,9 +30,9 @@
   right: 0;
   bottom: 0;
   z-index: 60;
-  /* Standalone: knapp über dem Home-Indikator (Safe-Area + kleiner Abstand).
-     In Safari ist safe-area-inset-bottom = 0 → dort 8px über der Browser-Leiste. */
-  padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  /* Ganz an den unteren Rand: kleiner Festabstand, Safe-Area/Home-Indikator
+     wird bewusst NICHT freigehalten (auf Wunsch so tief wie möglich). */
+  padding: 8px 16px 6px;
   display: flex;
   align-items: flex-end;
   justify-content: center;

@@ -174,42 +174,6 @@ export const CONTENT: Record<number, ContentItem[]> = {
   24: [{ ch: 'instagram', t: 'UGC Repost', time: '14:00', status: 'sched' }, { ch: 'youtube', t: 'Webinar Highlights', time: '17:00', status: 'review' }],
 };
 
-// --- News & Trends ---
-export interface NewsHighlight {
-  cat: string;
-  title: string;
-  teaser: string;
-  src: string;
-  time: string;
-  tag: string;
-}
-
-export interface NewsItem {
-  cat: string;
-  title: string;
-  src: string;
-  time: string;
-}
-
-export const NEWS: { highlight: NewsHighlight; items: NewsItem[]; unread: number } = {
-  highlight: {
-    cat: 'Trend',
-    title: 'Kurzvideos dominieren 2026: Reels & Shorts treiben 68 % der organischen Reichweite',
-    teaser: 'Das Wachstum verschiebt sich plattformübergreifend klar zu kurzen, vertikalen Videos. Marken mit ≥3 Reels pro Woche wachsen 2,4× schneller.',
-    src: 'Social Media Today', time: 'vor 2 Std', tag: 'trend-report-2026',
-  },
-  items: [
-    { cat: 'Plattform', title: 'Instagram rollt „Trial Reels" für alle Business-Accounts aus', src: 'Meta Newsroom', time: 'vor 4 Std' },
-    { cat: 'Plattform', title: 'LinkedIn priorisiert künftig Karussell-Posts im Feed', src: 'LinkedIn Blog', time: 'vor 6 Std' },
-    { cat: 'Trend', title: 'UGC schlägt Hochglanz: authentische Inhalte mit +34 % Engagement', src: 'HubSpot', time: 'vor 9 Std' },
-    { cat: 'Mention', title: '„Sommer-Launch 2026" in 12 Branchen-Newslettern erwähnt', src: 'Mention-Tracking', time: 'Gestern' },
-    { cat: 'Plattform', title: 'TikTok erweitert Suchanzeigen auf den DACH-Raum', src: 'TikTok Business', time: 'Gestern' },
-    { cat: 'Trend', title: 'KI-Captioning halbiert die Produktionszeit für Social-Clips', src: 'Later', time: 'vor 2 Tagen' },
-    { cat: 'Mention', title: 'G-Hub von @marketingweek als „Tool der Woche" gelistet', src: 'X · @marketingweek', time: 'vor 2 Tagen' },
-  ],
-  unread: 4,
-};
-
 // --- Mitteilungen / Inbox ---
 export interface InboxItem {
   id: string;

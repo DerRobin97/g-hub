@@ -29,6 +29,7 @@ import type {
   AssetDto,
   AssetKind,
   UploadUrlDto,
+  NewsDto,
   SearchResultsDto,
 } from '@g-hub/shared';
 
@@ -538,6 +539,24 @@ export async function uploadAsset(file: File, channel?: string | null): Promise<
     storageKey,
     channel: channel ?? null,
   });
+}
+
+// --- Branchen-News & Trends ---
+export type { NewsDto, NewsCategory } from '@g-hub/shared';
+
+/** News des Workspace (neueste zuerst; Backend befüllt beim ersten Abruf). */
+export function listNews(): Promise<NewsDto[]> {
+  return apiGet<NewsDto[]>('/news');
+}
+
+/** Einen News-Beitrag als gelesen markieren. */
+export function markNewsRead(id: string): Promise<NewsDto> {
+  return apiPatch<NewsDto>(`/news/${id}/read`);
+}
+
+/** Alle News-Beiträge als gelesen markieren. */
+export function markAllNewsRead(): Promise<{ status: string }> {
+  return apiPost<{ status: string }>('/news/read-all');
 }
 
 // --- Globale Suche (Bauplan §5.1 / §7) ---

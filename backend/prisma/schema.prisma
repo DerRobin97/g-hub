@@ -48,6 +48,7 @@ model Workspace {
   planMonths  PlanMonth[]
   timeEntries TimeEntry[]
   assets      Asset[]
+  news        News[]
 
   @@map("workspaces")
 }
@@ -560,4 +561,38 @@ model Asset {
 
   @@index([workspaceId, kind])
   @@map("assets")
+}
+
+// ── Branchen-News & Trends (§4.x — Dashboard/News-Sektion) ───
+// Kategorie = Anzeige-Label aus dem Prototyp (data.js, UI-Filter).
+enum NewsCategory {
+  Trend
+  Plattform
+  Mention
+}
+
+model News {
+  id          String       @id @default(uuid())
+  workspaceId String       @map("workspace_id")
+  category    NewsCategory
+  title       String
+  // Teaser/Lead (v. a. für Highlight + Detailansicht); Liste kommt ohne aus.
+  teaser      String?
+  // Quelle (z. B. „Social Media Today").
+  source      String
+  // Maschinen-Tag (optional, wie Prototyp `tag`).
+  tag         String?
+  // Markiert den hervorgehobenen Beitrag (Highlight-Karte).
+  highlight   Boolean      @default(false)
+  // Gelesen-Status (Workspace-weit) → speist den Mitteilungs-Badge.
+  read        Boolean      @default(false)
+  // Veröffentlichungszeit; Frontend bildet daraus das relative Label.
+  publishedAt DateTime     @default(now()) @map("published_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, publishedAt])
+  @@map("news")
 }

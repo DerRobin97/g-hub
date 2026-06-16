@@ -7,7 +7,8 @@ import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
 import { MobileNav } from './MobileNav';
 import { AIDock } from '../features/ai/AIAssistant';
-import { INBOX, NEWS } from '../lib/mockData';
+import { listNews } from '../lib/api';
+import { INBOX } from '../lib/mockData';
 
 const LAYOUTS: Array<[WebLayout, string]> = [
   ['full', 'Voll'],
@@ -51,8 +52,17 @@ export function AppShell(): React.JSX.Element {
   const navigate = useNavigate();
   const [aiOpen, setAiOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(false);
+  const [newsUnread, setNewsUnread] = useState(0);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const alertCount = INBOX.filter((n) => n.unread).length + (NEWS.unread || 0);
+  // INBOX/Mitteilungen noch Mock; ungelesene News kommen aus dem Backend.
+  const alertCount = INBOX.filter((n) => n.unread).length + newsUnread;
+
+  // Ungelesene News für den Mitteilungs-Badge laden.
+  useEffect(() => {
+    listNews()
+      .then((items) => setNewsUnread(items.filter((n) => !n.read).length))
+      .catch(() => setNewsUnread(0));
+  }, []);
 
   // Nav-Collapse beim Scrollen (Design-Doku Kap. 6): ab scrollTop > 18 px einklappen.
   const onCanvasScroll = (): void => setNavCollapsed((canvasRef.current?.scrollTop ?? 0) > 18);

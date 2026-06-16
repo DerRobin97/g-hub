@@ -326,6 +326,24 @@ export interface UploadUrlDto {
   uploadUrl: string;
 }
 
+// --- Branchen-News & Trends (Dashboard/News-Sektion) ---
+// Kategorie = Anzeige-Label wie im Prototyp (UI-Filter „Trend/Plattform/Mention").
+export const NEWS_CATEGORIES = ['Trend', 'Plattform', 'Mention'] as const;
+export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
+
+export interface NewsDto {
+  id: string;
+  category: NewsCategory;
+  title: string;
+  teaser: string | null;
+  source: string;
+  tag: string | null;
+  highlight: boolean;
+  read: boolean;
+  // ISO-Zeitstempel; das Frontend bildet daraus das relative Label.
+  publishedAt: string;
+}
+
 // --- Globale Suche — Bauplan §5.1 / §7 (Punkt 12) ---
 export interface SearchHitDto {
   id: string;

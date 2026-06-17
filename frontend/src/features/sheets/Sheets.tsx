@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { TimeEntryDto, TimeOverviewDto, AssetDto, SearchResultsDto } from '@g-hub/shared';
+import type { TimeEntryDto, TimeOverviewDto, AssetDto, NotificationDto, SearchResultsDto } from '@g-hub/shared';
 import { Icon, type IconName } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
 import { Avatar, Bars, ChannelBadge, Ring } from '../../components/ui';
@@ -16,16 +16,28 @@ import {
   getAssets,
   uploadAsset,
   searchAll,
+  listNotifications,
+  markAllNotificationsRead,
 } from '../../lib/api';
 import {
   ASSETS,
   CHANNELS,
-  INBOX,
   TASKS,
   TEAM,
   TEAM_BY_ID,
   type SimpleTask,
 } from '../../lib/mockData';
+
+/** Relatives Zeit-Label aus einem ISO-Zeitstempel (de). */
+function relTimeLabel(iso: string): string {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
+  if (min < 1) return 'gerade eben';
+  if (min < 60) return `vor ${min} Min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `vor ${h} Std`;
+  const d = Math.round(h / 24);
+  return d === 1 ? 'Gestern' : `vor ${d} Tagen`;
+}
 
 const labelStyleField: React.CSSProperties = { marginTop: 16 };
 
@@ -147,10 +159,25 @@ export function ComposeSheet({ data, close }: SheetProps): React.JSX.Element {
 
 // ── Inbox / Mitteilungen ─────────────────────────────────────
 function InboxContent(): React.JSX.Element {
-  const [items, setItems] = useState(INBOX);
+  const [items, setItems] = useState<NotificationDto[]>([]);
+  const [loading, setLoading] = useState(true);
   const icons: Record<string, IconName> = { comment: 'message', approve: 'checkCircle', metric: 'trend', system: 'bell', upload: 'layers' };
-  const markAll = (): void => setItems((it) => it.map((x) => ({ ...x, unread: false })));
-  const unread = items.filter((x) => x.unread).length;
+  useEffect(() => {
+    let active = true;
+    listNotifications()
+      .then((n) => active && setItems(n))
+      .catch(() => active && setItems([]))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+  const markAll = (): void => {
+    setItems((it) => it.map((x) => ({ ...x, read: true })));
+    markAllNotificationsRead().catch(() => undefined);
+  };
+  const unread = items.filter((x) => !x.read).length;
+  if (loading) return <div className="dim" style={{ fontSize: 13, textAlign: 'center', padding: '24px 0' }}>Lädt …</div>;
   return (
     <>
       {unread > 0 && (
@@ -160,24 +187,28 @@ function InboxContent(): React.JSX.Element {
         </div>
       )}
       <div className="stack">
-        {items.map((n) => (
-          <div key={n.id} className="card" style={{ display: 'flex', gap: 13, padding: 14, position: 'relative', borderColor: n.unread ? 'var(--accent-line)' : 'var(--line)' }}>
-            {n.who ? (
-              <Avatar m={n.who} size={40} />
-            ) : (
-              <div className="kpi-ico" style={{ width: 40, height: 40, borderRadius: 12, background: 'none', color: 'var(--accent-fg)' }}><Icon name={icons[n.type]} size={19} /></div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, lineHeight: 1.35 }}>
-                {n.who && <span style={{ fontWeight: 700 }}>{TEAM_BY_ID[n.who].name} </span>}
-                <span className="muted">{n.txt}</span>
+        {items.map((n) => {
+          const member = n.who ? TEAM_BY_ID[n.who] : undefined;
+          return (
+            <div key={n.id} className="card" style={{ display: 'flex', gap: 13, padding: 14, position: 'relative', borderColor: !n.read ? 'var(--accent-line)' : 'var(--line)' }}>
+              {n.who && member ? (
+                <Avatar m={n.who} size={40} />
+              ) : (
+                <div className="kpi-ico" style={{ width: 40, height: 40, borderRadius: 12, background: 'none', color: 'var(--accent-fg)' }}><Icon name={icons[n.type]} size={19} /></div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, lineHeight: 1.35 }}>
+                  {member && <span style={{ fontWeight: 700 }}>{member.name} </span>}
+                  <span className="muted">{n.txt}</span>
+                </div>
+                {n.sub && <div className="dim" style={{ fontSize: 13, marginTop: 4, fontStyle: n.type === 'comment' ? 'italic' : 'normal' }}>{n.sub}</div>}
+                <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 6, fontFamily: 'var(--ff-mono)' }}>{relTimeLabel(n.createdAt)}</div>
               </div>
-              {n.sub && <div className="dim" style={{ fontSize: 13, marginTop: 4, fontStyle: n.type === 'comment' ? 'italic' : 'normal' }}>{n.sub}</div>}
-              <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 6, fontFamily: 'var(--ff-mono)' }}>{n.t}</div>
+              {!n.read && <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, marginTop: 4 }} />}
             </div>
-            {n.unread && <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, marginTop: 4 }} />}
-          </div>
-        ))}
+          );
+        })}
+        {items.length === 0 && <div className="dim" style={{ fontSize: 13, textAlign: 'center', padding: '24px 0' }}>Keine Mitteilungen.</div>}
       </div>
     </>
   );

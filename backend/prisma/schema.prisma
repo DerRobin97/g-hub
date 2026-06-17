@@ -49,6 +49,7 @@ model Workspace {
   timeEntries TimeEntry[]
   assets      Asset[]
   news        News[]
+  notifications Notification[]
 
   @@map("workspaces")
 }
@@ -595,4 +596,32 @@ model News {
 
   @@index([workspaceId, publishedAt])
   @@map("news")
+}
+
+// ── Mitteilungen / Inbox (Benachrichtigungen) ───────────────
+// Typ steuert Icon/Darstellung im Prototyp (Inbox).
+enum NotificationType {
+  comment
+  approve
+  metric
+  system
+  upload
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  workspaceId String           @map("workspace_id")
+  type        NotificationType
+  // Auslösende Person (Team-Kürzel) oder null bei System-Meldungen.
+  who         String?
+  txt         String
+  sub         String?
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, read])
+  @@map("notifications")
 }

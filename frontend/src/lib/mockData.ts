@@ -174,25 +174,6 @@ export const CONTENT: Record<number, ContentItem[]> = {
   24: [{ ch: 'instagram', t: 'UGC Repost', time: '14:00', status: 'sched' }, { ch: 'youtube', t: 'Webinar Highlights', time: '17:00', status: 'review' }],
 };
 
-// --- Mitteilungen / Inbox ---
-export interface InboxItem {
-  id: string;
-  type: string;
-  who: string | null;
-  txt: string;
-  sub: string;
-  t: string;
-  unread: boolean;
-}
-
-export const INBOX: InboxItem[] = [
-  { id: 'n1', type: 'comment', who: 'lena', txt: 'hat dich in "Sommer-Launch" erwähnt', sub: '„Kannst du den Hook noch checken?"', t: 'vor 8 Min', unread: true },
-  { id: 'n2', type: 'approve', who: 'mira', txt: 'Freigabe angefragt', sub: 'Produkt-Teaser Reels · 2 Posts', t: 'vor 41 Min', unread: true },
-  { id: 'n3', type: 'metric', who: null, txt: 'Sommer-Launch übertrifft Ziel', sub: 'Reichweite +18% über Plan', t: 'vor 2 Std', unread: true },
-  { id: 'n4', type: 'comment', who: 'jonas', txt: 'hat Creatives hochgeladen', sub: '6 neue Assets in der Bibliothek', t: 'vor 5 Std', unread: false },
-  { id: 'n5', type: 'system', who: null, txt: '3 Posts wurden veröffentlicht', sub: 'Instagram · LinkedIn · X', t: 'Gestern', unread: false },
-];
-
 // --- Assets ---
 export interface Asset {
   id: string;

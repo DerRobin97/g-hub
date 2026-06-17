@@ -7,8 +7,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
 import { MobileNav } from './MobileNav';
 import { AIDock } from '../features/ai/AIAssistant';
-import { listNews } from '../lib/api';
-import { INBOX } from '../lib/mockData';
+import { listNews, listNotifications } from '../lib/api';
 
 const LAYOUTS: Array<[WebLayout, string]> = [
   ['full', 'Voll'],
@@ -51,24 +50,24 @@ export function AppShell(): React.JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const [aiOpen, setAiOpen] = useState(false);
-  const [navCollapsed, setNavCollapsed] = useState(false);
   const [newsUnread, setNewsUnread] = useState(0);
+  const [notifUnread, setNotifUnread] = useState(0);
   const canvasRef = useRef<HTMLDivElement>(null);
-  // INBOX/Mitteilungen noch Mock; ungelesene News kommen aus dem Backend.
-  const alertCount = INBOX.filter((n) => n.unread).length + newsUnread;
+  // Ungelesene Mitteilungen + News (beide aus dem Backend) speisen den Badge.
+  const alertCount = notifUnread + newsUnread;
 
-  // Ungelesene News für den Mitteilungs-Badge laden.
+  // Ungelesene Mitteilungen + News für den Badge laden.
   useEffect(() => {
+    listNotifications()
+      .then((items) => setNotifUnread(items.filter((n) => !n.read).length))
+      .catch(() => setNotifUnread(0));
     listNews()
       .then((items) => setNewsUnread(items.filter((n) => !n.read).length))
       .catch(() => setNewsUnread(0));
   }, []);
 
-  // Nav-Collapse beim Scrollen (Design-Doku Kap. 6): ab scrollTop > 18 px einklappen.
-  const onCanvasScroll = (): void => setNavCollapsed((canvasRef.current?.scrollTop ?? 0) > 18);
-  // Beim Routenwechsel Nav wieder ausklappen und Inhalt nach oben scrollen.
+  // Beim Routenwechsel Inhalt nach oben scrollen (Spec 01·C: kein Nav-Collapse).
   useEffect(() => {
-    setNavCollapsed(false);
     canvasRef.current?.scrollTo({ top: 0 });
   }, [location.pathname]);
 
@@ -207,7 +206,7 @@ export function AppShell(): React.JSX.Element {
         )}
 
         {/* Inhaltsfläche — geroutete Seiten */}
-        <div className={canvasClass} ref={canvasRef} onScroll={onCanvasScroll}>
+        <div className={canvasClass} ref={canvasRef}>
           <div className="web-inner">
             <Outlet />
           </div>
@@ -227,8 +226,8 @@ export function AppShell(): React.JSX.Element {
         </button>
       )}
 
-      {/* ---------- Handy: dedizierte mobile Bottom-Nav (eigene mnav-* Klassen) ---------- */}
-      <MobileNav collapsed={navCollapsed} />
+      {/* ---------- Handy: mobile Bottom-Nav „01·C" (Morph zur Pille) ---------- */}
+      <MobileNav />
     </div>
   );
 }

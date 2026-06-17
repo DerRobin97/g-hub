@@ -30,6 +30,7 @@ import type {
   AssetKind,
   UploadUrlDto,
   NewsDto,
+  NotificationDto,
   AiChatMessage,
   AiChatResponse,
   SearchResultsDto,
@@ -559,6 +560,24 @@ export function markNewsRead(id: string): Promise<NewsDto> {
 /** Alle News-Beiträge als gelesen markieren. */
 export function markAllNewsRead(): Promise<{ status: string }> {
   return apiPost<{ status: string }>('/news/read-all');
+}
+
+// --- Mitteilungen / Inbox ---
+export type { NotificationDto, NotificationType } from '@g-hub/shared';
+
+/** Mitteilungen des Workspace (neueste zuerst; Backend befüllt beim ersten Abruf). */
+export function listNotifications(): Promise<NotificationDto[]> {
+  return apiGet<NotificationDto[]>('/notifications');
+}
+
+/** Eine Mitteilung als gelesen markieren. */
+export function markNotificationRead(id: string): Promise<NotificationDto> {
+  return apiPatch<NotificationDto>(`/notifications/${id}/read`);
+}
+
+/** Alle Mitteilungen als gelesen markieren. */
+export function markAllNotificationsRead(): Promise<{ status: string }> {
+  return apiPost<{ status: string }>('/notifications/read-all');
 }
 
 // --- KI-Assistent (Claude/Anthropic über Backend-Proxy) ---

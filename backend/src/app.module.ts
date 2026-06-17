@@ -13,6 +13,7 @@ import { AssetsModule } from './assets/assets.module';
 import { SearchModule } from './search/search.module';
 import { NewsModule } from './news/news.module';
 import { AiModule } from './ai/ai.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AiModule } from './ai/ai.module';
     SearchModule,
     NewsModule,
     AiModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

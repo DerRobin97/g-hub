@@ -339,6 +339,23 @@ export interface AiChatResponse {
   reply: string;
 }
 
+// --- Mitteilungen / Inbox (Benachrichtigungen) ---
+// Typ bestimmt Icon/Darstellung im Prototyp (Inbox).
+export const NOTIFICATION_TYPES = ['comment', 'approve', 'metric', 'system', 'upload'] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export interface NotificationDto {
+  id: string;
+  type: NotificationType;
+  // Auslösende Person (Team-Kürzel) oder null bei System-Meldungen.
+  who: string | null;
+  txt: string;
+  sub: string | null;
+  read: boolean;
+  // ISO-Zeitstempel; das Frontend bildet daraus das relative Label.
+  createdAt: string;
+}
+
 // --- Branchen-News & Trends (Dashboard/News-Sektion) ---
 // Kategorie = Anzeige-Label wie im Prototyp (UI-Filter „Trend/Plattform/Mention").
 export const NEWS_CATEGORIES = ['Trend', 'Plattform', 'Mention'] as const;

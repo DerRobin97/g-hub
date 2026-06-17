@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useAppearance, type WebLayout } from '../app/AppearanceContext';
 import type { AccentSelection, Theme } from '../lib/appearance';
 import { Icon } from '../components/Icon';
+import { clearDemoData, seedDemoData } from '../lib/api';
 
 const THEME_OPTIONS: Array<{ key: Theme; label: string }> = [
   { key: 'light', label: 'Weiß' },
@@ -50,6 +52,86 @@ function SegRow<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+/** TEMPORÄR: Demo-Daten in den Workspace einfügen / wieder entfernen. */
+function DemoControls(): React.JSX.Element {
+  const [busy, setBusy] = useState<null | 'seed' | 'clear'>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const run = async (kind: 'seed' | 'clear'): Promise<void> => {
+    if (kind === 'clear' && !window.confirm('Alle Demo-Inhalte (Aufgaben, Projekte, Kampagnen, Jahresplan, News, Mitteilungen) dieses Workspace löschen?')) return;
+    setBusy(kind);
+    setMsg(null);
+    try {
+      const res = kind === 'seed' ? await seedDemoData() : await clearDemoData();
+      const txt: Record<string, string> = {
+        seeded: 'Demo-Daten eingefügt. Seiten neu laden, um sie zu sehen.',
+        exists: 'Demo-Daten sind bereits vorhanden.',
+        cleared: 'Inhalte entfernt. Seiten neu laden.',
+      };
+      setMsg(txt[res.status] ?? res.status);
+    } catch {
+      setMsg('Fehler — bitte erneut versuchen.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section
+      style={{
+        background: 'var(--surface)',
+        border: '1px dashed var(--line-strong)',
+        borderRadius: 'var(--r-md)',
+        padding: '22px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+      }}
+    >
+      <div style={{ fontSize: '15px', fontWeight: 700 }}>Demo-Daten (temporär)</div>
+      <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>
+        Füllt den Workspace mit Beispiel-Inhalten zum Testen. „Entfernen" löscht alle Inhalte
+        der Module Aufgaben, Projekte, Kampagnen, Jahresplan, News und Mitteilungen.
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => void run('seed')}
+          disabled={busy !== null}
+          style={{
+            padding: '9px 14px',
+            borderRadius: 'var(--r-sm)',
+            border: 0,
+            background: 'var(--accent)',
+            color: 'var(--accent-ink)',
+            cursor: 'pointer',
+            fontWeight: 700,
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {busy === 'seed' ? 'Füge ein …' : 'Demo-Daten einfügen'}
+        </button>
+        <button
+          onClick={() => void run('clear')}
+          disabled={busy !== null}
+          style={{
+            padding: '9px 14px',
+            borderRadius: 'var(--r-sm)',
+            border: '1px solid var(--line-strong)',
+            background: 'var(--surface-2)',
+            color: 'var(--text)',
+            cursor: 'pointer',
+            fontWeight: 600,
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {busy === 'clear' ? 'Entferne …' : 'Demo-Daten entfernen'}
+        </button>
+      </div>
+      {msg && <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>{msg}</div>}
+    </section>
   );
 }
 
@@ -175,6 +257,8 @@ export function ProfilPage(): React.JSX.Element {
           <SegRow options={LAYOUT_OPTIONS} active={webLayout} onSelect={setWebLayout} />
         </div>
       </section>
+
+      <DemoControls />
     </div>
   );
 }

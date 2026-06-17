@@ -580,6 +580,14 @@ export function markAllNotificationsRead(): Promise<{ status: string }> {
   return apiPost<{ status: string }>('/notifications/read-all');
 }
 
+// --- Demo-Daten (temporär; füllt/leert den Workspace) ---
+export function seedDemoData(): Promise<{ status: string }> {
+  return apiPost<{ status: string }>('/demo/seed');
+}
+export function clearDemoData(): Promise<{ status: string }> {
+  return apiPost<{ status: string }>('/demo/clear');
+}
+
 // --- KI-Assistent (Claude/Anthropic über Backend-Proxy) ---
 export type { AiChatMessage, AiChatResponse } from '@g-hub/shared';
 

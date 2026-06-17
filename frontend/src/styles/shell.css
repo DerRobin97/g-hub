@@ -3,10 +3,16 @@
    Baut auf den migrierten .web-* Klassen (web.css) auf.
    ============================================================ */
 
-/* Die Web-Shell füllt den SPA-Wurzelknoten (#root, 100% Höhe via index.css). */
+/* Die Web-Shell füllt den SPA-Wurzelknoten. Höhe = echte Viewport-Höhe
+   (`--app-height`, per JS aus window.innerHeight gesetzt; Fallback 100%).
+   Das garantiert auch in der iOS-Homescreen-Webapp die volle Bildschirmhöhe,
+   sodass die absolut daran verankerte Bottom-Nav ganz unten sitzt. */
 #root .web-shell {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-height, 100%);
 }
 
 /* Die mobile Bottom-Nav ist eine eigenständige Komponente mit eigenen

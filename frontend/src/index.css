@@ -13,9 +13,9 @@ body,
 
 /* iOS-Homescreen-Webapp (standalone): In diesem Modus „kollabiert" `height: 100%`
    zusammen mit `viewport-fit=cover` + `black-translucent` zu einer zu kurzen Höhe.
-   `-webkit-fill-available` erzwingt die echte Bildschirmhöhe, damit die absolut
-   positionierte App-Shell den vollen Bildschirm füllt (Fallback, falls --app-height
-   noch nicht gesetzt ist). */
+   `-webkit-fill-available` erzwingt die echte Bildschirmhöhe für Seiten außerhalb der
+   App-Shell (z. B. den Login-Screen). Die App-Shell selbst ist `fixed; inset:0` und
+   unabhängig davon (siehe shell.css). */
 html {
   height: -webkit-fill-available;
 }

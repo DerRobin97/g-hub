@@ -5,7 +5,6 @@ import { NAV, PROJ_SUB, headFor } from './nav';
 import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
-import { AIDock } from '../features/ai/AIAssistant';
 import { listNews, listNotifications } from '../lib/api';
 
 const LAYOUTS: Array<[WebLayout, string]> = [
@@ -48,7 +47,6 @@ export function AppShell(): React.JSX.Element {
   const { open } = useOverlay();
   const location = useLocation();
   const navigate = useNavigate();
-  const [aiOpen, setAiOpen] = useState(false);
   const [newsUnread, setNewsUnread] = useState(0);
   const [notifUnread, setNotifUnread] = useState(0);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -83,7 +81,7 @@ export function AppShell(): React.JSX.Element {
   const depth = location.pathname.split('/').filter(Boolean).length;
   const showBack = depth > 1;
 
-  const shellClass = `web-shell layout-${webLayout}${isLight ? ' theme-light' : ''}${aiOpen ? ' ai-open' : ''}`;
+  const shellClass = `web-shell layout-${webLayout}${isLight ? ' theme-light' : ''}`;
   const canvasClass = `web-canvas ${isWide ? 'wide' : 'col'}${showSub ? ' in-sub' : ''}`;
 
   return (
@@ -211,19 +209,6 @@ export function AppShell(): React.JSX.Element {
           </div>
         </div>
       </div>
-
-      {/* ---------- KI-Assistent (andockbares Panel) ---------- */}
-      <div className="web-ai" aria-hidden={!aiOpen}>
-        {aiOpen && <AIDock onClose={() => setAiOpen(false)} />}
-      </div>
-
-      {/* ---------- KI-FAB (unten rechts) ---------- */}
-      {!aiOpen && (
-        <button className="web-fab" onClick={() => setAiOpen(true)} aria-label="KI-Assistent öffnen">
-          <Icon name="bot" size={24} stroke={1.9} />
-          <span className="web-fab-tx">KI-Assistent</span>
-        </button>
-      )}
     </div>
   );
 }

@@ -3,19 +3,15 @@
    Baut auf den migrierten .web-* Klassen (web.css) auf.
    ============================================================ */
 
-/* Die Web-Shell ist am Viewport `fixed` und füllt zuverlässig den ECHTEN Bildschirm.
-   `100dvh` (dynamische Viewport-Höhe) entspricht in der iOS-Homescreen-App (standalone,
-   viewport-fit=cover) der vollen Bildschirmhöhe inkl. Safe-Areas. Fallback für ältere
-   Engines: `--app-height` (JS aus window.innerHeight) bzw. `100vh`. Die Shell selbst
-   scrollt nicht — nur `.web-canvas` scrollt intern. */
+/* Die Web-Shell ist am Viewport `fixed` und über `inset: 0` an ALLEN vier Kanten
+   verankert (top/right/bottom/left = 0). Dadurch spannt sie sich in der iOS-Homescreen-App
+   (standalone, viewport-fit=cover) immer exakt über den sichtbaren Bildschirm — ohne Lücke
+   unten und ohne abgeschnittenen Inhalt. Eine explizite Höhe (100dvh / --app-height) ist
+   damit nicht nötig und würde bei iOS-Standalone-Rundungsfehlern sogar Lücken erzeugen.
+   Die Shell selbst scrollt nicht — nur `.web-canvas` scrollt intern. */
 #root .web-shell {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: auto;
-  height: var(--app-height, 100vh);
-  height: 100dvh;
+  inset: 0;
 }
 
 @media (max-width: 860px) {

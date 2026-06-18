@@ -159,9 +159,7 @@
 .web-main{
   grid-column:2; position:relative;
   display:grid; grid-template-rows:auto 1fr; min-width:0; min-height:0;
-  transition:margin-right .32s cubic-bezier(.4,0,.2,1);
 }
-.web-shell.ai-open .web-main{ margin-right:380px; }
 
 /* Doppel-Variante: zusätzliche Kontext-Spalte links im Hauptbereich */
 .web-main.has-sub{ grid-template-columns:236px 1fr; grid-template-rows:auto 1fr; }
@@ -265,38 +263,6 @@
 .web-shell .card.tap:hover{ border-color:var(--line-strong); }
 .web-shell .create-grid{ grid-template-columns:1fr 1fr; }
 .web-shell .asset-grid{ grid-template-columns:repeat(3, 1fr); }
-
-/* ---------------------------------------------------------------
-   KI-Assistent — andockbares Panel rechts
---------------------------------------------------------------- */
-.web-ai{
-  position:absolute; top:0; right:0; bottom:0; width:380px; z-index:55;
-  border-left:1px solid var(--line); background:var(--bg-2);
-  display:flex; flex-direction:column;
-  transform:translateX(100%); opacity:0; pointer-events:none;
-  transition:transform .34s cubic-bezier(.4,0,.2,1), opacity .24s ease;
-  box-shadow:-24px 0 60px -30px rgba(0,0,0,0.6);
-}
-.web-shell.ai-open .web-ai{ transform:none; opacity:1; pointer-events:auto; }
-.web-ai .ai-dock{ height:100%; background:var(--bg-2); }
-
-/* KI-FAB — ruhiger, ausklappender Knopf unten rechts */
-.web-fab{
-  position:absolute; right:26px; bottom:26px; z-index:48;
-  display:flex; align-items:center; gap:0; height:56px; padding:0 16px;
-  border:0; border-radius:18px; cursor:pointer;
-  background:var(--accent); color:var(--accent-ink);
-  font-family:var(--ff); font-weight:700; font-size:14.5px;
-  box-shadow:0 16px 34px -12px var(--accent-glow), 0 4px 12px -4px rgba(0,0,0,0.35);
-  transition:transform .14s, filter .18s, box-shadow .2s;
-}
-.web-fab .web-fab-tx{
-  max-width:0; margin-left:0; overflow:hidden; white-space:nowrap; opacity:0;
-  transition:max-width .3s cubic-bezier(.4,0,.2,1), margin-left .3s cubic-bezier(.4,0,.2,1), opacity .2s ease;
-}
-.web-fab:hover{ filter:brightness(1.05); }
-.web-fab:hover .web-fab-tx{ max-width:160px; margin-left:9px; opacity:1; }
-.web-fab:active{ transform:scale(.95); }
 
 /* ---------------------------------------------------------------
    Sheets → zentrierte Modal-Dialoge (ruhig, klassisch)

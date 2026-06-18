@@ -9,17 +9,6 @@ import './index.css';
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root-Element #root nicht gefunden.');
 
-// iOS-Homescreen-Webapp (standalone): Die App-Shell nutzt primär `100dvh` für die echte
-// Bildschirmhöhe (siehe shell.css). Für ältere Engines ohne `dvh`-Support spiegeln wir
-// `window.innerHeight` in `--app-height` als Fallback; `height: 100%` ist dort unzuverlässig
-// (kollabiert zu kurz).
-function setAppHeight(): void {
-  document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-}
-setAppHeight();
-window.addEventListener('resize', setAppHeight);
-window.addEventListener('orientationchange', setAppHeight);
-
 createRoot(rootEl).render(
   <StrictMode>
     <BrowserRouter>

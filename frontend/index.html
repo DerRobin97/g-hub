@@ -6,11 +6,12 @@
     <meta name="theme-color" content="#161a07" />
     <title>G-Hub — Marketing-Hub</title>
 
-    <!-- Favicons (Gerber-Hub-Markenzeichen) -->
-    <link rel="icon" type="image/svg+xml" href="/app-icon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <!-- Favicons (Gerber-Hub-Markenzeichen). Versions-Query (?v=2) erzwingt das
+         Neuladen nach dem Logo-Wechsel — iOS cacht das apple-touch-icon sonst hartnäckig. -->
+    <link rel="icon" type="image/svg+xml" href="/app-icon.svg?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
     <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Ladescreen/Logo als eigenständige Web-Komponente (registriert <gerber-hub-loader>) -->

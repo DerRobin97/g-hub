@@ -17,6 +17,13 @@ body {
   min-height: 100%;
 }
 
+/* Kein Gummiband-/Überscroll-Effekt: Sobald der Inhalt zu Ende ist, ist Schluss —
+   die Seite federt nicht über die Inhaltsgrenze hinaus (kein Bounce oben/unten). */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   background: var(--bg);
   color: var(--text);

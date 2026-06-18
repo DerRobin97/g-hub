@@ -5,7 +5,6 @@ import { NAV, PROJ_SUB, headFor } from './nav';
 import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
 import { useOverlay } from './OverlayContext';
-import { MobileNav } from './MobileNav';
 import { AIDock } from '../features/ai/AIAssistant';
 import { listNews, listNotifications } from '../lib/api';
 
@@ -40,8 +39,8 @@ function ThemeGlyph({ light }: { light: boolean }): React.JSX.Element {
 }
 
 /**
- * App-Shell: Desktop-Sidebar + Topbar (aus `main-web.jsx`), responsive Bottom-Nav
- * (aus `main.jsx`) und Layout-Varianten full/rail/dual. Inhalte kommen via <Outlet/>.
+ * App-Shell: Desktop-Sidebar + Topbar (aus `main-web.jsx`) und Layout-Varianten
+ * full/rail/dual. Inhalte kommen via <Outlet/>.
  */
 export function AppShell(): React.JSX.Element {
   const { user } = useAuth();
@@ -225,9 +224,6 @@ export function AppShell(): React.JSX.Element {
           <span className="web-fab-tx">KI-Assistent</span>
         </button>
       )}
-
-      {/* ---------- Handy: mobile Bottom-Nav „01·C" (Morph zur Pille) ---------- */}
-      <MobileNav />
     </div>
   );
 }

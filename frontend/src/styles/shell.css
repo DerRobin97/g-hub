@@ -1,14 +1,13 @@
 /* ============================================================
-   App-Shell — responsives Verhalten: Desktop-Sidebar ⇄ mobile Bottom-Nav.
+   App-Shell — responsives Verhalten: Desktop-Sidebar, am Handy nur Inhalt.
    Baut auf den migrierten .web-* Klassen (web.css) auf.
    ============================================================ */
 
 /* Die Web-Shell ist am Viewport `fixed` und füllt zuverlässig den ECHTEN Bildschirm.
    `100dvh` (dynamische Viewport-Höhe) entspricht in der iOS-Homescreen-App (standalone,
    viewport-fit=cover) der vollen Bildschirmhöhe inkl. Safe-Areas. Fallback für ältere
-   Engines: `--app-height` (JS aus window.innerHeight) bzw. `100vh`. Da die Shell selbst
-   nicht scrollt (nur `.web-canvas` scrollt intern), sitzt die absolut daran verankerte
-   Bottom-Nav stabil ganz unten und wackelt beim Scrollen nicht. */
+   Engines: `--app-height` (JS aus window.innerHeight) bzw. `100vh`. Die Shell selbst
+   scrollt nicht — nur `.web-canvas` scrollt intern. */
 #root .web-shell {
   position: fixed;
   top: 0;
@@ -18,10 +17,6 @@
   height: var(--app-height, 100vh);
   height: 100dvh;
 }
-
-/* Die mobile Bottom-Nav ist eine eigenständige Komponente mit eigenen
-   `mnav-*`-Klassen (siehe mobile-nav.css). Sie ist unabhängig vom .web-shell-Grid
-   und wird dort selbst ein-/ausgeblendet. */
 
 @media (max-width: 860px) {
   .web-shell {
@@ -43,7 +38,8 @@
     grid-column: 1;
   }
   .web-canvas {
-    padding: 22px 16px 100px;
+    /* Untere Safe-Area (Home-Indicator) freihalten. */
+    padding: 22px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .web-top {
     /* Safe-Area oben freihalten, damit die Kopfzeile nicht in die
@@ -56,6 +52,4 @@
   .web-search {
     display: none;
   }
-  /* Die mobile Bottom-Nav + KI-FAB (mnav-*) blendet mobile-nav.css selbst ein;
-     dort wird auch der Desktop-KI-FAB (.web-fab) am Handy ausgeblendet. */
 }

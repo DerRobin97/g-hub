@@ -1,6 +1,6 @@
 /**
  * Geteilte Navigations- und Kopfzeilen-Definitionen (migriert aus `app/main.jsx`
- * und `app/main-web.jsx`). Hält Sidebar, Bottom-Nav und Topbar konsistent.
+ * und `app/main-web.jsx`). Hält Sidebar und Topbar konsistent.
  */
 import type { IconName } from '../components/Icon';
 

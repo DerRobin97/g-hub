@@ -5,9 +5,12 @@
    ============================================================ */
 
 .web-shell{
-  position:absolute; inset:0;
+  /* Normale Webseite: nicht fixiert, kein eigener Scroll — der Body scrollt.
+     min-height füllt mindestens die erste Bildhöhe; Inhalt darf darüber wachsen. */
+  min-height:100vh;
   display:grid;
   grid-template-columns: 252px 1fr;
+  align-items:start;
   background:
     radial-gradient(90% 50% at 78% -8%, color-mix(in oklab, var(--accent) 6%, transparent) 0%, transparent 60%),
     var(--bg);
@@ -15,7 +18,6 @@
   font-family:var(--ff);
   letter-spacing:-0.01em;
   -webkit-font-smoothing:antialiased;
-  overflow:hidden;
 }
 .web-shell *{box-sizing:border-box;}
 
@@ -25,7 +27,8 @@
 .web-side{
   grid-column:1;
   display:flex; flex-direction:column;
-  min-height:0;
+  /* Desktop: bleibt beim normalen Body-Scroll stehen (klassische Sidebar). */
+  position:sticky; top:0; align-self:start; height:100vh;
   padding:20px 14px 16px;
   border-right:1px solid var(--line);
   background:color-mix(in oklab, var(--bg-2) 60%, transparent);
@@ -158,14 +161,16 @@
 --------------------------------------------------------------- */
 .web-main{
   grid-column:2; position:relative;
-  display:grid; grid-template-rows:auto 1fr; min-width:0; min-height:0;
+  display:grid; grid-template-columns:1fr; min-width:0;
 }
 
 /* Doppel-Variante: zusätzliche Kontext-Spalte links im Hauptbereich */
-.web-main.has-sub{ grid-template-columns:236px 1fr; grid-template-rows:auto 1fr; }
+.web-main.has-sub{ grid-template-columns:236px 1fr; }
 .web-main.has-sub .web-top{ grid-column:1 / -1; }
 .web-subnav{
-  grid-row:2; grid-column:1; min-height:0; overflow-y:auto;
+  grid-row:2; grid-column:1;
+  /* Desktop: bleibt unter der Topbar stehen, Body scrollt. */
+  position:sticky; top:66px; height:calc(100vh - 66px); overflow-y:auto;
   border-right:1px solid var(--line); padding:18px 12px;
   background:color-mix(in oklab, var(--bg-2) 35%, transparent);
 }
@@ -185,12 +190,13 @@
 .web-subnav{overflow-x:hidden;}
 .web-canvas.in-sub{ grid-column:2; }
 
-/* Topbar */
+/* Topbar — klebt beim normalen Body-Scroll oben (deckender Hintergrund) */
 .web-top{
   grid-row:1; grid-column:1 / -1;
+  position:sticky; top:0; z-index:20;
   height:66px; display:flex; align-items:center; gap:16px;
   padding:0 28px; border-bottom:1px solid var(--line);
-  background:color-mix(in oklab, var(--bg) 86%, transparent);
+  background:var(--bg);
 }
 .web-back{
   width:36px; height:36px; border-radius:10px; flex-shrink:0; margin-left:-6px;
@@ -226,9 +232,9 @@
   background:var(--bad); color:#fff; border:2px solid var(--bg);
 }
 
-/* Canvas / Inhaltsfläche */
+/* Canvas / Inhaltsfläche — kein eigener Scroll mehr, der Body scrollt. */
 .web-canvas{
-  grid-row:2; min-height:0; overflow-y:auto;
+  grid-row:2;
   padding:30px 28px 64px;
 }
 .web-canvas::-webkit-scrollbar{ width:10px; height:10px; }
@@ -236,9 +242,6 @@
 .web-inner{ margin:0 auto; width:100%; }
 .web-canvas.col  .web-inner{ max-width:780px; }
 .web-canvas.wide .web-inner{ max-width:1240px; }
-
-/* Die geteilten Screens kommen ohne eigenes Padding aus (das hatte .scroll) */
-.web-shell .web-canvas{ -webkit-overflow-scrolling:touch; }
 
 /* ---------------------------------------------------------------
    Breite Routen (Dashboard / Analytics): 2-spaltiges Magazin-Layout

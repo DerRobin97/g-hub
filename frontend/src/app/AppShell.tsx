@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { NAV, PROJ_SUB, headFor } from './nav';
@@ -49,7 +49,6 @@ export function AppShell(): React.JSX.Element {
   const navigate = useNavigate();
   const [newsUnread, setNewsUnread] = useState(0);
   const [notifUnread, setNotifUnread] = useState(0);
-  const canvasRef = useRef<HTMLDivElement>(null);
   // Ungelesene Mitteilungen + News (beide aus dem Backend) speisen den Badge.
   const alertCount = notifUnread + newsUnread;
 
@@ -63,9 +62,9 @@ export function AppShell(): React.JSX.Element {
       .catch(() => setNewsUnread(0));
   }, []);
 
-  // Beim Routenwechsel Inhalt nach oben scrollen (Spec 01·C: kein Nav-Collapse).
+  // Beim Routenwechsel nach oben scrollen (Dokument scrollt, normale Webseite).
   useEffect(() => {
-    canvasRef.current?.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
   const isLight = theme === 'light';
@@ -203,7 +202,7 @@ export function AppShell(): React.JSX.Element {
         )}
 
         {/* Inhaltsfläche — geroutete Seiten */}
-        <div className={canvasClass} ref={canvasRef}>
+        <div className={canvasClass}>
           <div className="web-inner">
             <Outlet />
           </div>

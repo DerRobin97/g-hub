@@ -3,16 +3,8 @@
    Baut auf den migrierten .web-* Klassen (web.css) auf.
    ============================================================ */
 
-/* Die Web-Shell ist am Viewport `fixed` und über `inset: 0` an ALLEN vier Kanten
-   verankert (top/right/bottom/left = 0). Dadurch spannt sie sich in der iOS-Homescreen-App
-   (standalone, viewport-fit=cover) immer exakt über den sichtbaren Bildschirm — ohne Lücke
-   unten und ohne abgeschnittenen Inhalt. Eine explizite Höhe (100dvh / --app-height) ist
-   damit nicht nötig und würde bei iOS-Standalone-Rundungsfehlern sogar Lücken erzeugen.
-   Die Shell selbst scrollt nicht — nur `.web-canvas` scrollt intern. */
-#root .web-shell {
-  position: fixed;
-  inset: 0;
-}
+/* Normale Webseite: Die Shell ist nicht fixiert und scrollt mit dem Body
+   (siehe web.css). Hier nur noch das responsive Verhalten. */
 
 @media (max-width: 860px) {
   .web-shell {
@@ -34,15 +26,12 @@
     grid-column: 1;
   }
   .web-canvas {
-    /* Untere Safe-Area (Home-Indicator) freihalten. */
-    padding: 22px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    padding: 22px 16px 40px;
   }
   .web-top {
-    /* Safe-Area oben freihalten, damit die Kopfzeile nicht in die
-       iOS-Statusleiste/Notch rutscht (viewport-fit=cover + black-translucent). */
     height: auto;
-    min-height: 60px;
-    padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px;
+    min-height: 56px;
+    padding: 10px 16px;
   }
   /* Suche wandert am Handy aus der Topbar (eigener Screen folgt später). */
   .web-search {

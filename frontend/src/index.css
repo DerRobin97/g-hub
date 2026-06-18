@@ -11,17 +11,19 @@ body,
   margin: 0;
 }
 
-/* iOS-Homescreen-Webapp (standalone): In diesem Modus „kollabiert" `height: 100%`
-   zusammen mit `viewport-fit=cover` + `black-translucent` zu einer zu kurzen Höhe.
-   `-webkit-fill-available` erzwingt die echte Bildschirmhöhe für Seiten außerhalb der
-   App-Shell (z. B. den Login-Screen). Die App-Shell selbst ist `fixed; inset:0` und
-   unabhängig davon (siehe shell.css). */
-html {
-  height: -webkit-fill-available;
-}
-body,
-#root {
-  min-height: -webkit-fill-available;
+/* iOS-Homescreen-Webapp (standalone): Das Dokument selbst darf NICHT scrollen.
+   Sonst entsteht in der Homescreen-App (viewport-fit=cover + black-translucent)
+   unten ein „Gummiband"-/Backdrop-Streifen, der nicht verschwindet — die Lücke,
+   die der Inhalt scheinbar nicht füllt. Wir sperren daher den Dokument-Scroll und
+   lassen ausschließlich `.web-canvas` intern scrollen. `100dvh` (mit `100%`-Fallback
+   oben) liefert die echte sichtbare Bildschirmhöhe zuverlässiger als das frühere
+   `-webkit-fill-available`, das iOS oft zu kurz auflöst. Die App-Shell ist zusätzlich
+   `fixed; inset:0` (siehe shell.css). */
+html,
+body {
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {

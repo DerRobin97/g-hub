@@ -9,12 +9,11 @@ import './index.css';
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root-Element #root nicht gefunden.');
 
-// iOS-Homescreen-Webapp (standalone): In diesem Modus sind `height: 100%` und der
-// Bezugsrahmen für `position: fixed` unzuverlässig — die Bottom-Nav driftet nach
-// oben. `window.innerHeight` liefert dagegen die echte nutzbare Höhe. Wir spiegeln
-// sie in `--app-height`; die App-Shell nutzt diese Höhe, und die Bottom-Nav ist
-// absolut daran verankert (siehe shell.css/mobile-nav.css). Damit sitzt sie auch
-// in der Homescreen-App zuverlässig ganz unten.
+// iOS-Homescreen-Webapp (standalone): In diesem Modus ist `height: 100%` unzuverlässig
+// (kollabiert zu einer zu kurzen Höhe). `window.innerHeight` liefert dagegen die echte
+// nutzbare Höhe. Wir spiegeln sie in `--app-height`; die App-Shell nutzt diese Höhe als
+// Bezug für ihr internes Scroll-Layout (`.web-canvas` scrollt innerhalb der Shell, siehe
+// shell.css/web.css). Die Bottom-Nav selbst ist davon unabhängig am Viewport `fixed`.
 function setAppHeight(): void {
   document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
 }

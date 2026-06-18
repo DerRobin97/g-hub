@@ -5,8 +5,9 @@
 
 /* Die Web-Shell füllt den SPA-Wurzelknoten. Höhe = echte Viewport-Höhe
    (`--app-height`, per JS aus window.innerHeight gesetzt; Fallback 100%).
-   Das garantiert auch in der iOS-Homescreen-Webapp die volle Bildschirmhöhe,
-   sodass die absolut daran verankerte Bottom-Nav ganz unten sitzt. */
+   Das garantiert auch in der iOS-Homescreen-Webapp die volle Bildschirmhöhe als
+   Bezug für das interne Scroll-Layout (die `.web-canvas` scrollt innerhalb der Shell).
+   Die mobile Bottom-Nav ist davon unabhängig am Viewport `fixed` (mobile-nav.css). */
 #root .web-shell {
   position: absolute;
   top: 0;

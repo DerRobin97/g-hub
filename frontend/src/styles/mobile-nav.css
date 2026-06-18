@@ -23,17 +23,21 @@
   }
 }
 
-/* ---------- Leiste (am Viewport unten verankert) ---------- */
-/* `.web-shell` trägt die echte App-Höhe (--app-height, siehe shell.css/main.tsx),
-   daher sitzt die absolut daran verankerte Leiste auch in der iOS-Homescreen-App
-   zuverlässig ganz unten (statt am evtl. zu kurzen Viewport via `fixed`). */
+/* ---------- Leiste (am echten Viewport-Boden verankert) ---------- */
+/* `position: fixed; bottom: 0` verankert die Leiste am physischen unteren
+   Bildschirmrand. In der iOS-Homescreen-App (standalone, viewport-fit=cover) ist
+   das der zuverlässige Bezug — unabhängig von der evtl. zu kurzen `--app-height`
+   aus window.innerHeight. Der untere Hintergrund (Verlauf) reicht bis ganz nach
+   unten (hinter den Home-Indicator), während die Pille (`.mnav-wrap`) per
+   `env(safe-area-inset-bottom)` über den Home-Indicator angehoben wird. So sitzt
+   die Leiste immer komplett unten, egal was Apple/Safari als Safe-Area einblendet. */
 .mnav-bar {
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 60;
-  padding: 0 14px 16px;
+  padding: 0 14px max(16px, env(safe-area-inset-bottom, 16px));
   display: flex;
   align-items: flex-end;
   justify-content: space-around;

@@ -14,9 +14,9 @@ body,
 
 /* iOS-Homescreen-Webapp (standalone): In diesem Modus „kollabiert" `height: 100%`
    zusammen mit `viewport-fit=cover` + `black-translucent` zu einer zu kurzen Höhe.
-   Folge: am Viewport `fixed` verankerte Elemente (Bottom-Nav) driften nach oben und
-   hinterlassen Leerraum darunter. `-webkit-fill-available` erzwingt die echte
-   Bildschirmhöhe, sodass die Leiste wieder ganz unten sitzt. */
+   `-webkit-fill-available` erzwingt die echte Bildschirmhöhe, damit die absolut
+   positionierte App-Shell den vollen Bildschirm füllt (Fallback, falls --app-height
+   noch nicht gesetzt ist). */
 html {
   height: -webkit-fill-available;
 }

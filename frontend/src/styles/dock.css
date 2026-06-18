@@ -1,0 +1,105 @@
+/* ============================================================
+   Massiv-Dock (Variante 01) — feste, randlose Bottom-Navigation.
+   Nur am Handy (≤860px) sichtbar; Desktop nutzt die Seitenleiste.
+   Solide, opake Fläche am Display-Boden, Haarlinie oben, dezenter
+   Schatten nach oben. Kein backdrop-filter, kein border-radius.
+   ============================================================ */
+
+/* Desktop: Dock ausgeblendet — die .web-side trägt die Navigation. */
+.mdock {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mdock {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 24px -16px rgba(0, 0, 0, 0.6);
+    /* iOS Home-Indicator-Abstand respektieren */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .theme-light .mdock {
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 -6px 20px -14px rgba(0, 0, 0, 0.18);
+  }
+
+  .mdock-wrap {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto 1fr 1fr;
+    align-items: center;
+    padding: 8px 8px 14px;
+  }
+
+  .mdock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-3);
+    border-radius: 12px;
+    font-family: var(--ff);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    padding: 6px 2px;
+    min-width: 0;
+  }
+  .mdock-item.on {
+    color: var(--text);
+  }
+  .mdock-item.on svg {
+    color: var(--accent-fg);
+  }
+  .mdock-label {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Zentraler ＋-Button */
+  .mdock-fab-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mdock-fab {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 26px -8px var(--accent-glow);
+    transition: filter 0.16s, transform 0.12s;
+  }
+  .mdock-fab:hover {
+    filter: brightness(1.05);
+  }
+  .mdock-fab:active {
+    transform: scale(0.96);
+  }
+
+  /* Inhalt läuft randlos durch und scrollt hinter das Dock —
+     genug Bodenabstand lassen, damit nichts dauerhaft verdeckt bleibt. */
+  .web-canvas {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+}

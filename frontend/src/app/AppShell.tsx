@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { MobileDock } from './MobileDock';
 import { NAV, PROJ_SUB, headFor } from './nav';
 import { useAppearance, type WebLayout } from './AppearanceContext';
 import { useAuth } from '../auth/AuthContext';
@@ -208,6 +209,9 @@ export function AppShell(): React.JSX.Element {
           </div>
         </div>
       </div>
+
+      {/* Massiv-Dock — feste Bottom-Navigation (nur Handy, ≤860px) */}
+      <MobileDock />
     </div>
   );
 }

@@ -9,11 +9,10 @@ import './index.css';
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root-Element #root nicht gefunden.');
 
-// iOS-Homescreen-Webapp (standalone): In diesem Modus ist `height: 100%` unzuverlässig
-// (kollabiert zu einer zu kurzen Höhe). `window.innerHeight` liefert dagegen die echte
-// nutzbare Höhe. Wir spiegeln sie in `--app-height`; die App-Shell nutzt diese Höhe als
-// Bezug für ihr internes Scroll-Layout (`.web-canvas` scrollt innerhalb der Shell, siehe
-// shell.css/web.css). Die Bottom-Nav selbst ist davon unabhängig am Viewport `fixed`.
+// iOS-Homescreen-Webapp (standalone): Die App-Shell nutzt primär `100dvh` für die echte
+// Bildschirmhöhe (siehe shell.css). Für ältere Engines ohne `dvh`-Support spiegeln wir
+// `window.innerHeight` in `--app-height` als Fallback; `height: 100%` ist dort unzuverlässig
+// (kollabiert zu kurz).
 function setAppHeight(): void {
   document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
 }

@@ -3,17 +3,20 @@
    Baut auf den migrierten .web-* Klassen (web.css) auf.
    ============================================================ */
 
-/* Die Web-Shell füllt den SPA-Wurzelknoten. Höhe = echte Viewport-Höhe
-   (`--app-height`, per JS aus window.innerHeight gesetzt; Fallback 100%).
-   Das garantiert auch in der iOS-Homescreen-Webapp die volle Bildschirmhöhe als
-   Bezug für das interne Scroll-Layout (die `.web-canvas` scrollt innerhalb der Shell).
-   Die mobile Bottom-Nav ist davon unabhängig am Viewport `fixed` (mobile-nav.css). */
+/* Die Web-Shell ist am Viewport `fixed` und füllt zuverlässig den ECHTEN Bildschirm.
+   `100dvh` (dynamische Viewport-Höhe) entspricht in der iOS-Homescreen-App (standalone,
+   viewport-fit=cover) der vollen Bildschirmhöhe inkl. Safe-Areas. Fallback für ältere
+   Engines: `--app-height` (JS aus window.innerHeight) bzw. `100vh`. Da die Shell selbst
+   nicht scrollt (nur `.web-canvas` scrollt intern), sitzt die absolut daran verankerte
+   Bottom-Nav stabil ganz unten und wackelt beim Scrollen nicht. */
 #root .web-shell {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--app-height, 100%);
+  bottom: auto;
+  height: var(--app-height, 100vh);
+  height: 100dvh;
 }
 
 /* Die mobile Bottom-Nav ist eine eigenständige Komponente mit eigenen

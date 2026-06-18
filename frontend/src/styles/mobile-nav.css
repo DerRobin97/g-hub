@@ -23,16 +23,15 @@
   }
 }
 
-/* ---------- Leiste (am echten Viewport-Boden verankert) ---------- */
-/* `position: fixed; bottom: 0` verankert die Leiste am physischen unteren
-   Bildschirmrand. In der iOS-Homescreen-App (standalone, viewport-fit=cover) ist
-   das der zuverlässige Bezug — unabhängig von der evtl. zu kurzen `--app-height`
-   aus window.innerHeight. Der untere Hintergrund (Verlauf) reicht bis ganz nach
-   unten (hinter den Home-Indicator), während die Pille (`.mnav-wrap`) per
-   `env(safe-area-inset-bottom)` über den Home-Indicator angehoben wird. So sitzt
-   die Leiste immer komplett unten, egal was Apple/Safari als Safe-Area einblendet. */
+/* ---------- Leiste (am unteren Rand der Shell verankert) ---------- */
+/* `.web-shell` ist `position: fixed` und exakt bildschirmhoch (100dvh, siehe shell.css);
+   sie scrollt selbst nicht. Die absolut daran verankerte Leiste sitzt daher stabil ganz
+   unten und bewegt sich beim Scrollen NICHT (anders als `position: fixed`, das iOS beim
+   Momentum-Scrolling verschiebt). Der untere Verlauf reicht bis zum Bildschirmrand; die
+   Pille (`.mnav-wrap`) wird per `env(safe-area-inset-bottom)` über den Home-Indicator
+   angehoben. */
 .mnav-bar {
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;

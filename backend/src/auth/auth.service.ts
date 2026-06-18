@@ -8,6 +8,7 @@ export interface MeResponse {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   avatarUrl: string | null;
   memberships: Array<{
     workspaceId: string;
@@ -124,6 +125,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       avatarUrl: user.avatarUrl,
       memberships: user.memberships.map((m) => ({
         workspaceId: m.workspaceId,

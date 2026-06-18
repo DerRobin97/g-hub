@@ -15,6 +15,7 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -44,8 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     setUser(null);
   };
 
+  // Lädt die /me-Daten neu (z. B. nach dem Speichern im Profil-Sheet).
+  const refresh = async (): Promise<void> => {
+    setUser(await getMe());
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

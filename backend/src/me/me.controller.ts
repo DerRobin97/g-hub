@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
-import { MeService, type AppearanceResponse } from './me.service';
+import { MeService, type AppearanceResponse, type ProfileResponse } from './me.service';
 import { UpdateAppearanceDto } from './dto/update-appearance.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../common/jwt-payload.interface';
@@ -21,5 +22,13 @@ export class MeController {
     @Body() dto: UpdateAppearanceDto,
   ): Promise<AppearanceResponse> {
     return this.me.updateAppearance(user.id, dto);
+  }
+
+  @Put('profile')
+  updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<ProfileResponse> {
+    return this.me.updateProfile(user.id, dto);
   }
 }

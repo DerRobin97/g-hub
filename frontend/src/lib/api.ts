@@ -125,6 +125,7 @@ export interface Me {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   avatarUrl: string | null;
   memberships: Membership[];
   appearance: AppearancePref | null;
@@ -175,6 +176,26 @@ export function getAppearance(): Promise<AppearancePref> {
 
 export function updateAppearance(patch: AppearanceUpdate): Promise<AppearancePref> {
   return apiPut<AppearancePref>('/me/appearance', patch);
+}
+
+// --- Profil (Name/E-Mail/Telefon) ---
+export interface ProfileResponse {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+}
+
+export interface ProfileUpdate {
+  name?: string;
+  email?: string;
+  phone?: string | null;
+}
+
+/** Teil-Update des Profils; persistiert Name/E-Mail/Telefon. */
+export function updateProfile(patch: ProfileUpdate): Promise<ProfileResponse> {
+  return apiPut<ProfileResponse>('/me/profile', patch);
 }
 
 // --- Aufgaben / Tasks (Bauplan §4.6 / §5.1) ---

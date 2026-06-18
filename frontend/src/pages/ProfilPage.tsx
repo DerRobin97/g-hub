@@ -1,59 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { useAppearance, type WebLayout } from '../app/AppearanceContext';
-import type { AccentSelection, Theme } from '../lib/appearance';
+import { useOverlay } from '../app/OverlayContext';
 import { Icon } from '../components/Icon';
-import { clearDemoData, seedDemoData } from '../lib/api';
-
-const THEME_OPTIONS: Array<{ key: Theme; label: string }> = [
-  { key: 'light', label: 'Weiß' },
-  { key: 'gray', label: 'Grau' },
-  { key: 'dark', label: 'Schwarz' },
-];
-const ACCENT_OPTIONS: Array<{ key: AccentSelection; label: string }> = [
-  { key: 'gruen', label: 'Grün' },
-  { key: 'orange', label: 'Orange' },
-  { key: 'custom', label: 'Eigene' },
-];
-const LAYOUT_OPTIONS: Array<{ key: WebLayout; label: string }> = [
-  { key: 'full', label: 'Voll' },
-  { key: 'rail', label: 'Rail' },
-  { key: 'dual', label: 'Doppel' },
-];
-
-function SegRow<T extends string>({
-  options,
-  active,
-  onSelect,
-}: {
-  options: Array<{ key: T; label: string }>;
-  active: T;
-  onSelect: (key: T) => void;
-}): React.JSX.Element {
-  return (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      {options.map((o) => (
-        <button
-          key={o.key}
-          onClick={() => onSelect(o.key)}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 'var(--r-sm)',
-            border: '1px solid var(--line-strong)',
-            cursor: 'pointer',
-            background: o.key === active ? 'var(--accent)' : 'var(--surface-2)',
-            color: o.key === active ? 'var(--accent-ink)' : 'var(--text)',
-            fontWeight: 600,
-            fontSize: '13px',
-          }}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+import { Bars, Ring, SectionHead, useReveal } from '../components/ui';
+import {
+  clearDemoData,
+  getTimeMonth,
+  getTimeToday,
+  listTasks,
+  seedDemoData,
+  type TaskDto,
+  type TimeEntryDto,
+  type TimeOverviewDto,
+} from '../lib/api';
+import { dayOf, todayIso, weekDays } from '../features/tasks/taskUtils';
+import { APP_VERSION } from '../lib/version';
 
 /** TEMPORÄR: Demo-Daten in den Workspace einfügen / wieder entfernen. */
 function DemoControls(): React.JSX.Element {
@@ -135,128 +97,245 @@ function DemoControls(): React.JSX.Element {
   );
 }
 
-/** Profil + Darstellungs-Einstellungen (an GET/PUT /api/me/appearance gebunden). */
+interface TimeStatusInfo {
+  label: string;
+  color: string;
+}
+
+function timeStatusInfo(entry: TimeEntryDto | null): TimeStatusInfo {
+  if (entry?.status === 'in') return { label: 'Eingestempelt', color: 'var(--ok)' };
+  if (entry?.status === 'break') return { label: 'Pause', color: 'var(--warn)' };
+  return { label: 'Ausgestempelt', color: 'var(--text-3)' };
+}
+
+interface SettingItem {
+  icon: string;
+  label: string;
+  onClick?: () => void;
+}
+
+/** Profil-Übersicht (Aufgaben-/Arbeitszeit-Kennzahlen, Einstellungen, Darstellung). */
 export function ProfilPage(): React.JSX.Element {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { theme, accentSel, customAccent, webLayout, setTheme, setAccent, setWebLayout } =
-    useAppearance();
+  const { open } = useOverlay();
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root);
+
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [month, setMonth] = useState<TimeOverviewDto | null>(null);
+  const [today, setToday] = useState<TimeEntryDto | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void listTasks({ assignee: 'me' }).then((t) => active && setTasks(t)).catch(() => {});
+    void getTimeMonth().then((m) => active && setMonth(m)).catch(() => {});
+    void getTimeToday().then((e) => active && setToday(e)).catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // ── Aufgaben-Kennzahlen ──────────────────────────────────────
+  const openTasks = tasks.filter((t) => t.status !== 'erledigt');
+  const todayKey = todayIso();
+  const weekIsos = new Set(weekDays(new Date()).map((d) => d.iso));
+  const dueToday = openTasks.filter((t) => dayOf(t.dueDate) === todayKey).length;
+  const dueWeek = openTasks.filter((t) => {
+    const d = dayOf(t.dueDate);
+    return d !== null && weekIsos.has(d);
+  }).length;
+
+  // ── Arbeitszeit-Kennzahlen ───────────────────────────────────
+  const weekSeconds = month ? month.week.reduce((s, d) => s + d.seconds, 0) : 0;
+  const weeklyTarget = month?.settings.weeklyTarget ?? 0;
+  const targetSeconds = weeklyTarget * 3600;
+  const timePct = targetSeconds > 0 ? Math.min(1, weekSeconds / targetSeconds) : 0;
+  const weekHours = (weekSeconds / 3600).toLocaleString('de-DE', { maximumFractionDigits: 1 });
+  const status = timeStatusInfo(today);
+
+  // ── Profil-Kopf ──────────────────────────────────────────────
+  const initial = (user?.name?.trim()?.[0] ?? 'G').toUpperCase();
+  const role = user?.memberships[0]?.role ?? 'Mitglied';
+
+  const settings: SettingItem[] = [
+    { icon: 'shield', label: 'Konto & Sicherheit' },
+    { icon: 'bell', label: 'Benachrichtigungen', onClick: () => open('alerts') },
+    { icon: 'eye', label: 'Darstellung', onClick: () => open('darstellung') },
+    { icon: 'message', label: 'Hilfe & Support' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', maxWidth: '560px' }}>
+    <div ref={root} className="screen stack" style={{ maxWidth: 560, gap: 22 }}>
+      {/* 1 — Profil-Kopf */}
       <section
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: 'var(--r-md)',
-          boxShadow: 'var(--shadow)',
-          padding: '22px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '12px',
-        }}
+        className="reveal r-up"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, textAlign: 'center' }}
       >
-        <div>
-          <div style={{ fontSize: '18px', fontWeight: 700 }}>{user?.name}</div>
-          <div style={{ color: 'var(--text-2)', fontSize: '14px' }}>{user?.email}</div>
+        {user?.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={user.name}
+            style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover' }}
+          />
+        ) : (
+          <div className="avatar" style={{ width: 88, height: 88, fontSize: 32 }}>
+            {initial}
+          </div>
+        )}
+        <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 700, fontSize: 22, marginTop: 6 }}>
+          {user?.name}
         </div>
-        <button
-          onClick={() => void logout()}
+        <div className="dim" style={{ fontSize: 13 }}>G-Hub</div>
+        <span
           style={{
-            padding: '9px 14px',
-            borderRadius: 'var(--r-sm)',
-            border: '1px solid var(--line-strong)',
-            background: 'var(--surface-2)',
-            color: 'var(--text)',
-            cursor: 'pointer',
-            fontWeight: 600,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            marginTop: 4,
+            padding: '5px 12px',
+            borderRadius: 999,
+            background: 'color-mix(in oklab, var(--accent) 16%, transparent)',
+            color: 'var(--accent-fg)',
+            fontSize: 12.5,
+            fontWeight: 700,
+            textTransform: 'capitalize',
           }}
         >
-          Abmelden
+          <Icon name="shield" size={13} /> {role}
+        </span>
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>
+          {user?.email}
+        </div>
+        {user?.phone && (
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 13, color: 'var(--text-2)' }}>
+            {user.phone}
+          </div>
+        )}
+        <button
+          className="btn btn-ghost"
+          style={{ height: 42, marginTop: 12 }}
+          onClick={() => open('profileEdit')}
+        >
+          <Icon name="edit" size={16} /> Profil bearbeiten
         </button>
       </section>
 
+      {/* 2 — Hero „Meine Aufgaben" */}
       <button
+        className="feature tap reveal r-up"
         onClick={() => navigate('/profil/aufgaben')}
         style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: 'var(--r-md)',
-          boxShadow: 'var(--shadow)',
-          padding: '18px 22px',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
-          cursor: 'pointer',
-          color: 'var(--text)',
-          font: 'inherit',
+          gap: 16,
           textAlign: 'left',
+          font: 'inherit',
+          color: 'var(--text)',
+          cursor: 'pointer',
         }}
       >
-        <span className="kpi-ico" style={{ width: 40, height: 40, borderRadius: 12 }}>
-          <Icon name="check" size={19} />
-        </span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>Meine Aufgaben</div>
-          <div style={{ color: 'var(--text-3)', fontSize: 13, marginTop: 2 }}>
-            Persönliche To-dos & Wochenkalender
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Meine Aufgaben
+          </div>
+          <div className="big" style={{ margin: '8px 0 6px' }}>{openTasks.length}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            {dueToday} heute fällig · {dueWeek} diese Woche
           </div>
         </div>
-        <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '10px 16px',
+            borderRadius: 12,
+            background: 'var(--accent)',
+            color: 'var(--accent-ink)',
+            fontWeight: 700,
+            fontSize: 14,
+            flexShrink: 0,
+          }}
+        >
+          Öffnen <Icon name="chevronR" size={16} />
+        </span>
       </button>
 
-      <section
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: 'var(--r-md)',
-          boxShadow: 'var(--shadow)',
-          padding: '22px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '18px',
-        }}
-      >
-        <div style={{ fontSize: '15px', fontWeight: 700 }}>Darstellung</div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Hintergrund</span>
-          <SegRow options={THEME_OPTIONS} active={theme} onSelect={setTheme} />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Akzent</span>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <SegRow
-              options={ACCENT_OPTIONS}
-              active={accentSel}
-              onSelect={(k) => setAccent(k, k === 'custom' ? customAccent : undefined)}
-            />
-            {accentSel === 'custom' && (
-              <input
-                type="color"
-                value={customAccent}
-                onChange={(e) => setAccent('custom', e.target.value)}
-                aria-label="Eigene Akzentfarbe"
-                style={{
-                  width: '40px',
-                  height: '34px',
-                  border: '1px solid var(--line-strong)',
-                  borderRadius: 'var(--r-sm)',
-                  background: 'var(--surface-2)',
-                  cursor: 'pointer',
-                }}
-              />
-            )}
+      {/* 3 — Arbeitszeit */}
+      <div className="reveal r-up">
+        <SectionHead title="Arbeitszeit" link="Verwalten" onLink={() => open('worktime')} />
+        <div
+          className="card tap"
+          style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 16 }}
+          onClick={() => open('worktime')}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Ring pct={timePct} size={64} sw={7}>
+              <span style={{ fontSize: 15 }}>{Math.round(timePct * 100)}</span>
+            </Ring>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'var(--ff-disp)', fontWeight: 700, fontSize: 20 }}>
+                {weekHours} / {weeklyTarget} Std
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, fontSize: 13, color: 'var(--text-2)' }}>
+                <span className="sdot" style={{ background: status.color }} />
+                {status.label}
+              </div>
+            </div>
           </div>
+          {month && month.week.length > 0 && (
+            <Bars
+              data={month.week.map((d) => d.seconds / 3600)}
+              labels={month.week.map((d) => d.label)}
+              h={84}
+            />
+          )}
         </div>
+      </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Desktop-Layout</span>
-          <SegRow options={LAYOUT_OPTIONS} active={webLayout} onSelect={setWebLayout} />
-        </div>
-      </section>
+      {/* 4 — Einstellungs-Liste */}
+      <div className="card reveal r-up" style={{ padding: '4px 16px' }}>
+        {settings.map((s) => (
+          <button
+            key={s.label}
+            className="row"
+            onClick={s.onClick}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 0,
+              cursor: s.onClick ? 'pointer' : 'default',
+              font: 'inherit',
+              textAlign: 'left',
+              color: 'var(--text)',
+            }}
+          >
+            <span className="kpi-ico">
+              <Icon name={s.icon} size={18} />
+            </span>
+            <span className="row-main row-t">{s.label}</span>
+            <Icon name="chevronR" size={18} style={{ color: 'var(--text-3)' }} />
+          </button>
+        ))}
+      </div>
+
+      {/* 5 — Abmelden */}
+      <button
+        className="btn btn-ghost btn-block reveal r-up"
+        style={{ color: 'var(--bad)' }}
+        onClick={() => void logout()}
+      >
+        Abmelden
+      </button>
+
+      {/* 6 — Versionszeile */}
+      <div
+        className="reveal r-up"
+        style={{ textAlign: 'center', fontFamily: 'var(--ff-mono)', fontSize: 12, color: 'var(--text-3)' }}
+      >
+        G-Hub · {APP_VERSION}
+      </div>
 
       <DemoControls />
     </div>

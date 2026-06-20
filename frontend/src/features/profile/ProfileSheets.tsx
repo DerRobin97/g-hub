@@ -166,9 +166,11 @@ export function ProfileEditSheet({ close }: SheetProps): React.JSX.Element {
 
 // ── Darstellung ──────────────────────────────────────────────
 const THEME_OPTIONS: Array<{ key: Theme; label: string }> = [
-  { key: 'light', label: 'Weiß' },
-  { key: 'gray', label: 'Grau' },
-  { key: 'dark', label: 'Schwarz' },
+  { key: 'dark', label: 'Dark' },
+  { key: 'neon', label: 'Neon' },
+  { key: 'hell', label: 'Hell' },
+  { key: 'glass', label: 'Glass' },
+  { key: 'mesh', label: 'Mesh' },
 ];
 const ACCENT_OPTIONS: Array<{ key: AccentSelection; label: string }> = [
   { key: 'gruen', label: 'Grün' },

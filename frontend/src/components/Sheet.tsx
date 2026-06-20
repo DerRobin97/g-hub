@@ -43,7 +43,7 @@ export function Sheet({
         </div>
         <div className="sheet-body" style={{ flex: 1 }}>{children}</div>
         {foot && (
-          <div style={{ padding: '12px 20px calc(20px + env(safe-area-inset-bottom))', borderTop: '1px solid var(--line)', background: 'var(--bg-2)' }}>
+          <div className="sheet-foot">
             {foot}
           </div>
         )}

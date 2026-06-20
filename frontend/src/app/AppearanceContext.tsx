@@ -1,22 +1,28 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   applyTo,
-  cornerVars,
-  type AccentSelection,
-  type Corners,
+  normalizeThemeLegacy,
+  normalizeVariantLegacy,
   type Theme,
+  type Variant,
 } from '../lib/appearance';
 import { updateAppearance, type AppearancePref, type AppearanceUpdate } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 
 export type WebLayout = 'full' | 'rail' | 'dual';
 
+// Rückwärtskompatibilität
+export type { Theme, Variant };
+export type AccentSelection = 'gruen' | 'orange' | 'custom';
+export type Corners = Variant;
+
 interface AppearanceState {
   theme: Theme;
+  variant: Variant;
   accentSel: AccentSelection;
   customAccent: string;
   webLayout: WebLayout;
-  corners: Corners;
+  corners: Variant;
 }
 
 interface AppearanceValue extends AppearanceState {
@@ -24,40 +30,42 @@ interface AppearanceValue extends AppearanceState {
   toggleTheme: () => void;
   setAccent: (sel: AccentSelection, customHex?: string) => void;
   setWebLayout: (l: WebLayout) => void;
-  setCorners: (c: Corners) => void;
+  setVariant: (v: Variant) => void;
+  setCorners: (c: Variant) => void;
 }
 
 const DEFAULTS: AppearanceState = {
   theme: 'dark',
+  variant: 'clean',
   accentSel: 'gruen',
-  customAccent: '#5cc8ff',
+  customAccent: '#46E08A',
   webLayout: 'full',
-  corners: 'standard',
+  corners: 'clean',
 };
 
 const STORAGE_KEY = 'ghub-appearance';
 const AppearanceContext = createContext<AppearanceValue | null>(null);
 
-function normalizeTheme(v: string | undefined): Theme {
-  return v === 'light' || v === 'gray' || v === 'dark' ? v : DEFAULTS.theme;
-}
-function normalizeAccent(v: string | undefined): AccentSelection {
-  return v === 'gruen' || v === 'orange' || v === 'custom' ? v : DEFAULTS.accentSel;
-}
 function normalizeLayout(v: string | undefined): WebLayout {
   return v === 'full' || v === 'rail' || v === 'dual' ? v : DEFAULTS.webLayout;
 }
-function normalizeCorners(v: string | undefined): Corners {
-  return v === 'soft' || v === 'standard' || v === 'sharp' ? v : DEFAULTS.corners;
+
+function normalizeAccent(v: string | undefined): AccentSelection {
+  return v === 'gruen' || v === 'orange' || v === 'custom' ? v : DEFAULTS.accentSel;
 }
 
 function fromPref(pref: AppearancePref): AppearanceState {
+  const theme = normalizeThemeLegacy(pref.theme);
+  const variant = normalizeVariantLegacy(
+    (pref as unknown as { variant?: string }).variant || pref.corners
+  );
   return {
-    theme: normalizeTheme(pref.theme),
+    theme,
+    variant,
     accentSel: normalizeAccent(pref.accent),
     customAccent: pref.customAccent || DEFAULTS.customAccent,
     webLayout: normalizeLayout(pref.webLayout),
-    corners: normalizeCorners(pref.corners),
+    corners: variant,
   };
 }
 
@@ -65,13 +73,18 @@ function readStorage(): AppearanceState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULTS;
-    const p = JSON.parse(raw) as Partial<AppearanceState>;
+    const p = JSON.parse(raw) as Partial<AppearanceState & { corners?: string }>;
+    const theme = normalizeThemeLegacy(p.theme as string | undefined);
+    const variant = normalizeVariantLegacy(
+      (p.variant as string | undefined) ?? (p.corners as string | undefined)
+    );
     return {
-      theme: normalizeTheme(p.theme),
+      theme,
+      variant,
       accentSel: normalizeAccent(p.accentSel),
       customAccent: p.customAccent || DEFAULTS.customAccent,
       webLayout: normalizeLayout(p.webLayout),
-      corners: normalizeCorners(p.corners),
+      corners: variant,
     };
   } catch {
     return DEFAULTS;
@@ -81,58 +94,43 @@ function readStorage(): AppearanceState {
 export function AppearanceProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const { user } = useAuth();
   const [state, setState] = useState<AppearanceState>(readStorage);
-  // Verhindert, dass die Server-Synchronisierung pro Login mehrfach greift.
   const syncedUserRef = useRef<string | null>(null);
 
-  // CSS-Variablen global anwenden (Login-Screen + Shell teilen sich :root).
+  // CSS-Variablen + data-Attribute auf <html> anwenden
   useEffect(() => {
-    const root = document.documentElement;
-    applyTo(root, state.theme, state.accentSel, state.customAccent);
-    const c = cornerVars(state.corners);
-    root.style.setProperty('--r-lg', c.lg);
-    root.style.setProperty('--r-md', c.md);
-    root.style.setProperty('--r-sm', c.sm);
-  }, [state.theme, state.accentSel, state.customAccent, state.corners]);
+    applyTo(document.documentElement, state.theme, state.accentSel, state.customAccent, state.variant);
+  }, [state.theme, state.accentSel, state.customAccent, state.variant]);
 
-  // Beim Login die Server-Werte übernehmen (Quelle der Wahrheit), sonst lokal bleiben.
+  // Beim Login: Server-Werte übernehmen
   useEffect(() => {
-    if (!user) {
-      syncedUserRef.current = null;
-      return;
-    }
+    if (!user) { syncedUserRef.current = null; return; }
     if (syncedUserRef.current === user.id) return;
     syncedUserRef.current = user.id;
     if (user.appearance) {
       const next = fromPref(user.appearance);
       setState(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // localStorage nicht verfügbar — egal
-      }
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
     }
   }, [user]);
 
   const apply = (patch: Partial<AppearanceState>, remote: AppearanceUpdate): void => {
     setState((prev) => {
       const next = { ...prev, ...patch };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // ignorieren
-      }
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
       return next;
     });
-    // Nur persistieren, wenn eingeloggt; Fehler still schlucken (Best-Effort).
     if (user) void updateAppearance(remote).catch(() => undefined);
   };
+
+  const THEME_CYCLE: Theme[] = ['dark', 'neon', 'hell', 'glass', 'mesh'];
 
   const value: AppearanceValue = {
     ...state,
     setTheme: (t) => apply({ theme: t }, { theme: t }),
     toggleTheme: () => {
-      const t: Theme = state.theme === 'light' ? 'dark' : 'light';
-      apply({ theme: t }, { theme: t });
+      const idx = THEME_CYCLE.indexOf(state.theme);
+      const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
+      apply({ theme: next }, { theme: next });
     },
     setAccent: (sel, customHex) => {
       if (sel === 'custom' && customHex) {
@@ -142,7 +140,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }): React
       }
     },
     setWebLayout: (l) => apply({ webLayout: l }, { webLayout: l }),
-    setCorners: (c) => apply({ corners: c }, { corners: c }),
+    setVariant: (v) => apply({ variant: v, corners: v }, { corners: v }),
+    setCorners: (v) => apply({ variant: v, corners: v }, { corners: v }),
   };
 
   return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>;

@@ -68,7 +68,7 @@ export function AppShell(): React.JSX.Element {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
-  const isLight = theme === 'light';
+  const isLight = theme === 'hell';
   const firstName = user?.name?.split(' ')[0];
   const head = headFor(location.pathname, firstName);
   const initial = (user?.name?.trim()?.[0] ?? 'G').toUpperCase();
@@ -81,7 +81,8 @@ export function AppShell(): React.JSX.Element {
   const depth = location.pathname.split('/').filter(Boolean).length;
   const showBack = depth > 1;
 
-  const shellClass = `web-shell layout-${webLayout}${isLight ? ' theme-light' : ''}`;
+  // data-theme und data-variant werden von AppearanceContext auf <html> gesetzt.
+  const shellClass = `web-shell layout-${webLayout}`;
   const canvasClass = `web-canvas ${isWide ? 'wide' : 'col'}${showSub ? ' in-sub' : ''}`;
 
   return (
@@ -146,7 +147,7 @@ export function AppShell(): React.JSX.Element {
             <button
               className="web-iconbtn"
               onClick={toggleTheme}
-              title={isLight ? 'Dunkel' : 'Hell'}
+              title={isLight ? 'Dunkel' : 'Hell / Neon / Dark …'}
               aria-label="Erscheinung wechseln"
             >
               <ThemeGlyph light={isLight} />
